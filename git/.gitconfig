@@ -1,0 +1,31 @@
+[user]
+	name = Frank Hock
+	email = frank.hock@gmail.com
+
+[core]
+	editor = vim
+	pager = less -FRX
+
+[color]
+	ui = auto
+
+[pull]
+	rebase = true
+
+[push]
+	default = current
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	algorithm = histogram
+
+[rerere]
+	enabled = true
+
+[init]
+	defaultBranch = main
+
+[fetch]
+	prune = true
