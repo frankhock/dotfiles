@@ -8,11 +8,9 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
-# Autosuggestions (install: brew install zsh-autosuggestions)
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
 # Shell history search
-eval "$(mcfly init zsh)"
+. "$HOME/.atuin/bin/env"
+eval "$(atuin init zsh)"
 
 # Ruby (rbenv)
 eval "$(rbenv init - zsh)"
