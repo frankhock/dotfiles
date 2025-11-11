@@ -7,8 +7,11 @@ alias fuckit='git reset --hard HEAD'
 
 # Bundle commands
 alias bi='bundle install'
-alias bsetup='bi && yarn && bin/db-migrate'
+
+# Shortcut commands
+alias cc='claude'
 
 # Consider moving these to project-specific shell configs or .envrc files
-alias ui='cd ~/bits/user-interviews'
+alias bsetup='bi && yarn && bin/db-migrate'
 alias reset_db='bin/rails db:drop && bin/rails db:create && bin/rails db:migrate:with_data && bundle exec rake elasticsearch:development_reindex && bin/rails db:seed && bin/rails db:staging:seed && bin/rails log:clear tmp:clear'
+alias ui='cd ~/bits/user-interviews'
