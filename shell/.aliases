@@ -1,6 +1,8 @@
 # Navigation commands
-alias dir='ls -lah'
 alias bits='cd ~/bits'
+
+alias l='eza -lah --group-directories-first'
+alias ll='eza -lh --group-directories-first'
 
 # Dangerous operations - use with caution!
 alias fuckit='git reset --hard HEAD'
