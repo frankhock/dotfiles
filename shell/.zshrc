@@ -21,3 +21,6 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 
 # Starship
 eval "$(starship init zsh)"
+
+# Load user-installed binaries
+export PATH="$HOME/.local/bin:$PATH"
