@@ -2,10 +2,6 @@
 	name = Frank Hock
 	email = frank.hock@gmail.com
 
-[alias]
-  wip = !git add -A && git commit -m "WIP"
-  unwip = reset HEAD~1
-
 [color]
 	ui = auto
 
