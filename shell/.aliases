@@ -1,6 +1,5 @@
 # Navigation commands
 alias bits='cd ~/bits'
-
 alias l='eza -lah --group-directories-first'
 alias ll='eza -lh --group-directories-first'
 
@@ -9,6 +8,9 @@ alias fuckit='git reset --hard HEAD'
 
 # Bundle commands
 alias bi='bundle install'
+
+# Git commands
+alias gs='git status'
 
 # Shortcut commands
 alias cc='claude'
