@@ -14,9 +14,6 @@ full_symbol = '🔋 '
 charging_symbol = '⚡️ '
 discharging_symbol = '💀 '
 
-[deno]
-format = 'via [🦕 $version](green bold) '
-
 # Disable the package module, hiding it from the prompt completely
 [package]
 disabled = true
@@ -27,6 +24,3 @@ truncation_symbol = ''
 
 [nodejs]
 format = 'via [🤖 $version](bold green) '
-
-[php]
-format = 'via [🔹 $version](147 bold) '
