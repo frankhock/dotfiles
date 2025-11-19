@@ -5,3 +5,4 @@ ln -sf ~/dotfiles/shell/.zshrc ~/.zshrc
 ln -sf ~/dotfiles/shell/.aliases ~/.aliases
 
 ln -sf ~/dotfiles/shell/starship.toml ~/.config/starship.toml
+ln -sf ~/dotfiles/zed/settings.json ~/.config/zed/settings.json
