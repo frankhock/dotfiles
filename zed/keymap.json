@@ -1,0 +1,38 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "shift-alt-t": [
+        "task::Spawn",
+        {
+          "task_name": "test $ZED_RELATIVE_FILE:$ZED_ROW"
+        }
+      ]
+    }
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      // "j k": "vim::NormalBefore"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-p": "project_symbols::Toggle"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-t": "file_finder::Toggle"
+    }
+  }
+]

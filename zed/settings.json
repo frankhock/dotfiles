@@ -13,14 +13,14 @@
   "ui_font_family": ".ZedSans",
   "buffer_font_family": "JetBrains Mono",
   "base_keymap": "VSCode",
-  "icon_theme": "Zed (Default)",
+  "icon_theme": "Material Icon Theme",
   "agent": {
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "claude-sonnet-4"
     }
   },
-  "ui_font_size": 16.5,
+  "ui_font_size": 16,
   "buffer_font_size": 13.5,
   "theme": {
     "mode": "dark",
@@ -31,7 +31,7 @@
     "Ruby": {
       "tab_size": 2,
       "formatter": "language_server",
-      "language_servers": ["ruby-lsp"]
+      "language_servers": ["ruby-lsp", "ruby-lsp-rspec"]
     }
   },
   "lsp": {
