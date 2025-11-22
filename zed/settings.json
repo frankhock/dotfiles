@@ -31,7 +31,8 @@
     "Ruby": {
       "tab_size": 2,
       "formatter": "language_server",
-      "language_servers": ["ruby-lsp", "ruby-lsp-rspec"]
+      "language_servers": ["ruby-lsp"],
+      "debuggers": ["rdbg"]
     }
   },
   "lsp": {
