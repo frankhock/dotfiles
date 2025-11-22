@@ -6,7 +6,7 @@
 	ui = auto
 
 [core]
-	editor = vim
+	editor = zed --wait
 	pager = less -FRX
 
 [diff]
@@ -29,3 +29,6 @@
 
 [rerere]
 	enabled = true
+
+[gitbutler]
+	aiModelProvider = anthropic
