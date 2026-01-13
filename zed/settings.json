@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "use_smartcase_search": true,
+  "search": {
+    "case_sensitive": true,
+    "whole_word": true
+  },
   "colorize_brackets": true,
   "ui_font_weight": 500.0,
   "agent_ui_font_size": 14.5,
