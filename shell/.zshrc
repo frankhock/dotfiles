@@ -10,6 +10,8 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
+source /opt/homebrew/share/zsh/site-functions
+
 # Shell history search
 . "$HOME/.atuin/bin/env"
 eval "$(atuin init zsh)"
