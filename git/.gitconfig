@@ -55,4 +55,4 @@
 	ship = town ship
 	sync = town sync
 	up = town up
-	clean-stale = "!git branch -v | grep \"\\\\[gone\\\\]\" | sed \"s/^[+* ]//\" | awk \"{print \\$1}\" | while read branch; do worktree=$(git worktree list | grep \"\\\\[$branch\\\\]\" | awk \"{print \\$1}\"); if [ -n \"$worktree\" ] && [ \"$worktree\" != \"$(git rev-parse --show-toplevel)\" ]; then echo \"Removing worktree: $worktree\"; git worktree remove --force \"$worktree\"; fi; echo \"Deleting branch: $branch\"; git branch -D \"$branch\"; done"
+	clean-stale = "!git branch -v | grep \"\\\\[gone\\\\]\" | sed \"s/^[+* ]//\" | awk \"{print \\$1}\" | while read branch; do echo \"Deleting branch: $branch\"; git branch -D \"$branch\"; done"
