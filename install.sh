@@ -14,3 +14,6 @@ ln -sf ~/dotfiles/zed/tasks.json ~/.config/zed/tasks.json
 ln -sf ~/dotfiles/claude/skills ~/.claude/skills
 ln -sf ~/dotfiles/claude/agents ~/.claude/agents
 ln -sf ~/dotfiles/claude/commands ~/.claude/commands
+
+# Ghostty stuff
+ln -sf ~/dotfiles/ghostty/config ~/.config/ghostty/config

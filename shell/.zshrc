@@ -16,6 +16,9 @@ source /opt/homebrew/share/zsh/site-functions
 . "$HOME/.atuin/bin/env"
 eval "$(atuin init zsh)"
 
+# fzf
+source <(fzf --zsh)
+
 # Ruby (rbenv)
 eval "$(rbenv init - zsh)"
 
@@ -25,6 +28,9 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 
 # Starship
 eval "$(starship init zsh)"
+
+# Zoxide
+eval "$(zoxide init zsh)"
 
 # Load user-installed binaries
 export PATH="$HOME/.local/bin:$PATH"

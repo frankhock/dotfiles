@@ -1,0 +1,12 @@
+# aesthetics
+theme = Gruvbox Dark Hard
+mouse-hide-while-typing = true
+
+# keybindings
+keybind = ctrl+d=new_split:right
+
+# typography
+font-size=14
+font-thicken=true
+font-thicken-strength=1
+adjust-cell-height=1
