@@ -7,6 +7,20 @@ description: Generate development issues for Linear. Use when the user asks to c
 
 Generate Linear-ready development issues that are concise yet thorough, optimized for both human developers and AI agents.
 
+## Before Writing
+1. If the request references code, use **codebase-locator** to find relevant files
+2. If implementation details are needed, use **codebase-analyzer** to understand how existing code works
+3. If patterns/examples would help scope the work, use **codebase-pattern-finder**
+4. Ask clarifying questions if the request is vague or ambiguous
+
+## Workflow
+4. Confirm understanding of the task with the user
+5. Generate draft issue
+6. Ask if refinements are needed before finalizing
+
+## Multiple Issues
+If the request spans multiple concerns or the scope grows complex, generate separate issues and note dependencies between them.
+
 ## Template
 
 ```markdown
@@ -29,10 +43,10 @@ Brief description of the solution approach.
 - [ ] Testable criterion 3
 
 ### Technical Notes
-<!-- Include only if relevant: file locations, edge cases, dependencies, gotchas -->
+Optional: file locations, edge cases, dependencies, gotchas
 
 ### Resources
-<!-- Include only if applicable -->
+Optional links:
 - [Figma](#)
 - [Related PR](#)
 - [Spec doc](#)
@@ -56,7 +70,14 @@ Answer: What are we building to address it? Stay high-level.
 List only what's in scope. Out of scope is implicit—if it's not listed, it's not included. Be specific enough to prevent scope creep.
 
 ### Acceptance Criteria
-Each criterion must be independently testable. Write them as completion conditions, not implementation steps. Prefer "User can X" or "System does Y" over "Implement Z".
+Each criterion must be independently testable. Write them as completion conditions, not implementation steps.
+
+**Examples:**
+- ❌ "Implement authentication middleware"
+- ✅ "User is redirected to login when accessing protected routes without a session"
+
+- ❌ "Add error handling"
+- ✅ "System displays user-friendly error message when API request fails"
 
 ### Technical Notes
 Optional. Include only when there's non-obvious context: specific files to modify, edge cases to handle, architectural decisions, or sequencing dependencies.
