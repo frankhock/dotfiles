@@ -16,12 +16,21 @@ You are tasked with conducting comprehensive research across the codebase to ans
 - ONLY describe what exists, where it exists, how it works, and how components interact
 - You are creating a technical map/documentation of the existing system
 
-## Initial Setup:
+## Initial Setup
 
-When this command is invoked, respond with:
-```
-I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
-```
+When this command is invoked:
+
+1. **Check for project folder argument**
+   - If argument provided (e.g., `/research-codebase 2025-01-27-ENG-1234-feature-name`):
+     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - If exists, read existing `research.md` for context
+     - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
+   - If no argument, proceed to step 2
+
+2. **Respond with**:
+   ```
+   I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
+   ```
 
 Then wait for the user's research query.
 
@@ -105,7 +114,44 @@ Then wait for the user's research query.
    [Any areas that need further investigation]
    ```
 
-6. **Handle follow-up questions:**
+6. **Offer to save research to project folder:**
+   
+   After presenting findings, ask:
+   ```
+   Would you like to save this research to a project folder?
+   
+   Please provide:
+   - Ticket number (e.g., ENG-1234) - or "none"
+   - Feature name in kebab-case (e.g., user-authentication)
+   
+   Or provide an existing folder name to update, or "skip" to not save.
+   ```
+   
+   **If user provides ticket and feature name:**
+   - Create folder: `~/brain/thoughts/shared/YYYY-MM-DD-ENG-XXXX-feature-name/`
+   - Save to `~/brain/thoughts/shared/[folder]/research.md`
+   
+   **If updating existing project folder:**
+   - Append new findings with timestamp separator, or replace if user confirms
+
+   **research.md format:**
+   ```markdown
+   # Research: [Topic]
+   
+   **Project:** [folder-name]
+   **Conducted:** YYYY-MM-DD
+   
+   ## Summary
+   [Research summary]
+   
+   ## Detailed Findings
+   [Full research output]
+   
+   ## Code References
+   [File paths and line numbers]
+   ```
+
+7. **Handle follow-up questions:**
    - If the user has follow-up questions, spawn new sub-agents as needed
    - Build on previous findings rather than starting from scratch
 

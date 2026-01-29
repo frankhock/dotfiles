@@ -1,22 +1,46 @@
 ---
-description: Implement technical plans from thoughts/shared/plans with verification
+description: Implement technical plans from ~/brain/thoughts/shared/plans with verification
 ---
 
 # Implement Plan
 
-You are tasked with implementing an approved technical plan from `thoughts/shared/plans/`. These plans contain phases with specific changes and success criteria.
+You are tasked with implementing an approved technical plan from `~/brain/thoughts/shared/plans/`. These plans contain phases with specific changes and success criteria.
 
 ## Getting Started
 
-When given a plan path:
-- Read the plan completely and check for any existing checkmarks (- [x])
-- Read the original ticket and all files mentioned in the plan
-- **Read files fully** - never use limit/offset parameters, you need complete context
-- Think deeply about how the pieces fit together
-- Create a `Task list` to track your progress
-- Start implementing if you understand what needs to be done
+When this command is invoked:
 
-If no plan path provided, ask for one.
+1. **Check for project folder argument**
+   - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
+     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Read `research.md` for context (understand codebase findings)
+     - Read `plan.md` for implementation instructions
+     - Proceed with implementation
+   - If argument is a direct plan path (legacy):
+     - Read the plan at that path
+   - If no argument, proceed to auto-detection
+
+2. **Auto-detect recent project folders** (if no argument):
+   - Find project folders with plan.md from last 30 days
+   - If folders found, ask:
+     ```
+     I found project folders ready for implementation:
+     
+     1. [folder-name-1] (Research: ✓, Plan: ✓)
+     2. [folder-name-2] (Research: ✓, Plan: ✓)
+     
+     Which project would you like to implement? Or provide a plan path:
+     ```
+
+3. **If no project folder selected**, ask for plan path.
+
+4. **Load full context:**
+   - Read the plan completely and check for any existing checkmarks (- [x])
+   - Read the original ticket and all files mentioned in the plan
+   - **Read files fully** - never use limit/offset parameters, you need complete context
+   - Think deeply about how the pieces fit together
+   - Create a `Task list` to track your progress
+   - Start implementing if you understand what needs to be done
 
 ## Implementation Philosophy
 

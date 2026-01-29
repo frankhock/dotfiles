@@ -11,17 +11,34 @@ You are tasked with updating existing implementation plans based on user feedbac
 
 When this command is invoked:
 
-1. **Parse the input to identify**:
-   - Plan file path (e.g., `thoughts/shared/plans/2025-10-16-feature.md`)
-   - Requested changes/feedback
+1. **Check for project folder argument**
+   - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
+     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Read `plan.md` from folder
+     - Proceed with iteration
+   - If argument is a direct plan path (legacy):
+     - Read the plan at that path
+   - If no argument, proceed to auto-detection
 
-2. **Handle different input scenarios**:
+2. **Auto-detect recent project folders** (if no argument):
+   - Find project folders with plan.md from last 30 days
+   - If folders found, ask:
+     ```
+     I found project folders with existing plans:
+     
+     1. [folder-name-1]
+     2. [folder-name-2]
+     
+     Which plan would you like to iterate on? Or provide a plan path:
+     ```
 
-   **If NO plan file provided**:
+3. **Handle different input scenarios**:
+
+   **If NO plan file provided and no auto-detection matches**:
    ```
    I'll help you iterate on an existing implementation plan.
 
-   Which plan would you like to update? Please provide the path to the plan file (e.g., `thoughts/shared/plans/2025-10-16-feature.md`).
+   Which plan would you like to update? Please provide the path to the plan file (e.g., `~/brain/thoughts/shared/plans/2025-10-16-feature.md`).
    ```
    Wait for user input, then re-check for feedback.
 
@@ -105,6 +122,8 @@ Get user confirmation before proceeding.
 ### Step 4: Update the Plan
 
 1. **Make focused, precise edits** to the existing plan:
+   - If working with project folder: edit `~/brain/thoughts/shared/[folder]/plan.md`
+   - If working with legacy path: edit at that path
    - Use the Edit tool for surgical changes
    - Maintain the existing structure unless explicitly changing it
    - Keep all file:line references accurate
@@ -128,7 +147,7 @@ Get user confirmation before proceeding.
 
 2. **Present the changes made**:
    ```
-   I've updated the plan at `thoughts/shared/plans/[filename].md`
+   I've updated the plan at `~/brain/thoughts/shared/plans/[filename].md`
 
    Changes made:
    - [Specific change 1]
@@ -216,13 +235,13 @@ When spawning research sub-tasks:
 
 **Scenario 1: User provides everything upfront**
 ```
-User: /iterate_plan thoughts/shared/plans/2025-10-16-feature.md - add phase for error handling
+User: /iterate_plan ~/brain/thoughts/shared/plans/2025-10-16-feature.md - add phase for error handling
 Assistant: [Reads plan, researches error handling patterns, updates plan]
 ```
 
 **Scenario 2: User provides just plan file**
 ```
-User: /iterate_plan thoughts/shared/plans/2025-10-16-feature.md
+User: /iterate_plan ~/brain/thoughts/shared/plans/2025-10-16-feature.md
 Assistant: I've found the plan. What changes would you like to make?
 User: Split Phase 2 into two phases - one for backend, one for frontend
 Assistant: [Proceeds with update]
@@ -232,7 +251,7 @@ Assistant: [Proceeds with update]
 ```
 User: /iterate_plan
 Assistant: Which plan would you like to update? Please provide the path...
-User: thoughts/shared/plans/2025-10-16-feature.md
+User: ~/brain/thoughts/shared/plans/2025-10-16-feature.md
 Assistant: I've found the plan. What changes would you like to make?
 User: Add more specific success criteria
 Assistant: [Proceeds with update]

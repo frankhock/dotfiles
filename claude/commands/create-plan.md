@@ -11,25 +11,46 @@ You are tasked with creating detailed implementation plans through an interactiv
 
 When this command is invoked:
 
-1. **Check if parameters were provided**:
-   - If a file path or ticket reference was provided as a parameter, skip the default message
-   - Immediately read any provided files FULLY
-   - Begin the research process
+1. **Check for project folder argument**
+   - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
+     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Read `research.md` if it exists for context
+     - Inform user: "Using project folder [name]. Research context loaded."
+     - Proceed to research phase with this context
+   - If argument is a file path (e.g., `thoughts/allison/tickets/eng_1234.md`):
+     - Read the file as before (legacy behavior)
+     - Begin the research process
+   - If no argument, proceed to auto-detection
 
-2. **If no parameters provided**, respond with:
-```
-I'll help you create a detailed implementation plan. Let me start by understanding what we're building.
+2. **Auto-detect recent project folders** (if no argument):
+   - Find project folders from last 30 days in `~/brain/thoughts/shared/`
+   - If recent folders found, ask:
+     ```
+     I found recent project folders:
+     
+     1. [folder-name-1] (has research.md)
+     2. [folder-name-2] (has research.md)
+     3. Start a new project
+     
+     Enter a number, or describe what you'd like to plan:
+     ```
+   
+   If user selects a folder, read `research.md` from that folder for context.
 
-Please provide:
-1. The task/ticket description (or reference to a ticket file)
-2. Any relevant context, constraints, or specific requirements
-3. Links to related research or previous implementations
+3. **If no folders or user wants new**, respond with:
+   ```
+   I'll help you create a detailed implementation plan. Let me start by understanding what we're building.
 
-I'll analyze this information and work with you to create a comprehensive plan.
+   Please provide:
+   1. The task/ticket description (or reference to a ticket file)
+   2. Any relevant context, constraints, or specific requirements
+   3. Links to related research or previous implementations
 
-Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/allison/tickets/eng_1234.md`
-For deeper analysis, try: `/create_plan think deeply about thoughts/allison/tickets/eng_1234.md`
-```
+   I'll analyze this information and work with you to create a comprehensive plan.
+
+   Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/allison/tickets/eng_1234.md`
+   For deeper analysis, try: `/create_plan think deeply about thoughts/allison/tickets/eng_1234.md`
+   ```
 
 Then wait for the user's input.
 
@@ -164,14 +185,20 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
-   - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
-     - YYYY-MM-DD is today's date
-     - ENG-XXXX is the ticket number (omit if no ticket)
-     - description is a brief kebab-case description
-   - Examples:
-     - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
-     - Without ticket: `2025-01-08-improve-error-handling.md`
+1. **Determine save location:**
+   - If working with a project folder: save to `~/brain/thoughts/shared/[folder]/plan.md`
+   - If no project folder but user wants one: create it first with `mkdir -p ~/brain/thoughts/shared/YYYY-MM-DD-ENG-XXXX-feature-name`
+   - Legacy fallback: `~/brain/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   
+   **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
+   - YYYY-MM-DD is today's date
+   - ENG-XXXX is the ticket number (omit if no ticket)
+   - description is a brief kebab-case description
+   
+   Examples:
+   - With ticket: `2025-01-08-ENG-1478-parent-child-tracking/plan.md`
+   - Without ticket: `2025-01-08-improve-error-handling/plan.md`
+
 2. **Use this template structure**:
 
 ````markdown
@@ -267,7 +294,7 @@ After structure approval:
 ## References
 
 - Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
-- Related research: `thoughts/shared/research/[relevant].md`
+- Related research: `~/brain/thoughts/shared/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
 
@@ -276,7 +303,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `~/brain/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
