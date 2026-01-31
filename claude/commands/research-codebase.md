@@ -24,6 +24,7 @@ When this command is invoked:
    - If argument provided (e.g., `/research-codebase 2025-01-27-ENG-1234-feature-name`):
      - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
      - If exists, read existing `research.md` for context
+     - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 

@@ -14,6 +14,7 @@ When this command is invoked:
 1. **Check for project folder argument**
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Read `spec.md` if it exists (understand design decisions from brainstorming)
      - Read `research.md` if it exists for context
      - Inform user: "Using project folder [name]. Research context loaded."
      - Proceed to research phase with this context
