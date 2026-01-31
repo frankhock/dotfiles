@@ -28,7 +28,20 @@ When this command is invoked:
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 
-2. **Respond with**:
+2. **Auto-detect recent project folders** (if no argument):
+   - Find folders from last 30 days in `~/brain/thoughts/shared/`
+   - If recent folders found with spec.md, show user options:
+     ```
+     Recent project folders:
+
+     1. [folder-1] (spec: yes, research: no)
+     2. [folder-2] (spec: yes, research: yes - update)
+     3. Start fresh research (no project folder)
+
+     Select a number, or describe what you'd like to research:
+     ```
+
+3. **If no folders or user wants fresh research**, respond with:
    ```
    I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
    ```
@@ -138,18 +151,21 @@ Then wait for the user's research query.
    **research.md format:**
    ```markdown
    # Research: [Topic]
-   
+
    **Project:** [folder-name]
    **Conducted:** YYYY-MM-DD
-   
+
    ## Summary
    [Research summary]
-   
+
    ## Detailed Findings
    [Full research output]
-   
+
    ## Code References
    [File paths and line numbers]
+
+   ## Next Steps
+   - [ ] Create implementation plan: `/create-plan [folder-name]`
    ```
 
 7. **Handle follow-up questions:**

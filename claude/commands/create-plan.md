@@ -297,6 +297,10 @@ After structure approval:
 - Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
 - Related research: `~/brain/thoughts/shared/research/[relevant].md`
 - Similar implementation: `[file:line]`
+
+## Next Steps
+
+- [ ] Implement plan: `/implement-plan [folder-name]`
 ````
 
 ### Step 5: Sync and Review
