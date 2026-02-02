@@ -10,7 +10,7 @@
   "use_smartcase_search": true,
   "search": {
     "case_sensitive": true,
-    "whole_word": true
+    "whole_word": false,
   },
   "colorize_brackets": true,
   "ui_font_weight": 500.0,
@@ -23,26 +23,26 @@
   "agent": {
     "inline_assistant_model": {
       "provider": "copilot_chat",
-      "model": "claude-sonnet-4"
-    }
+      "model": "claude-sonnet-4",
+    },
   },
   "ui_font_size": 16,
   "buffer_font_size": 13.5,
   "buffer_font_features": {
-    "calt": false
+    "calt": false,
   },
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "Gruvbox Dark Hard"
+    "dark": "Gruvbox Dark Hard",
   },
   "languages": {
     "Ruby": {
       "tab_size": 2,
       "formatter": "language_server",
       "language_servers": ["ruby-lsp"],
-      "debuggers": ["rdbg"]
-    }
+      "debuggers": ["rdbg"],
+    },
   },
   "lsp": {
     "ruby-lsp": {
@@ -51,15 +51,15 @@
           "diagnostics": true,
           "formatting": true,
           "semanticHighlighting": false,
-          "debugging": true
+          "debugging": true,
         },
         "rubyVersionManager": {
-          "identifier": "auto"
+          "identifier": "auto",
         },
         "experimental": {
-          "addon": true
-        }
-      }
-    }
-  }
+          "addon": true,
+        },
+      },
+    },
+  },
 }
