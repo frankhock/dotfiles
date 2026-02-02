@@ -1,15 +1,32 @@
 ---
-name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+name: brainstorm
+description: "Interactive thought partner for exploring ideas and clarifying requirements. Use before implementation to understand what you're building and why."
 ---
 
-# Brainstorming Ideas Into Designs
+# Brainstorming Ideas Into Requirements
 
 ## Overview
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+Help turn ideas into clear product requirements through natural collaborative dialogue. You are a thought partner, not an architect - focus on understanding the **what** and **why**, leaving the **how** to later stages.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design in small sections (200-300 words), checking after each section whether it looks right so far.
+Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what the user wants to build, present the requirements in small sections, checking after each whether it looks right.
+
+## What This Skill Does
+
+- Clarifies the problem being solved
+- Explores user intent and goals
+- Defines requirements and constraints
+- Establishes success criteria (user-facing, not technical)
+- Identifies what's explicitly out of scope
+
+## What This Skill Does NOT Do
+
+- Propose implementation approaches or architecture
+- Design data models, APIs, or components
+- Make technical decisions
+- Cover error handling, testing strategies, or data flow
+
+Those belong in `/create-plan` after codebase research.
 
 ## Initial Setup
 
@@ -32,7 +49,7 @@ When this skill is invoked:
      2. [folder-2] (spec: no - add spec)
      3. Start fresh (new project folder)
      
-     Select a number, or describe what you'd like to design:
+     Select a number, or describe what you'd like to brainstorm:
      ```
 
 3. **If no folders or user wants fresh**: Proceed with normal brainstorming
@@ -44,21 +61,24 @@ When this skill is invoked:
 - Ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
+- Focus on understanding: purpose, goals, constraints, success criteria
 
-**Exploring approaches:**
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
+**Questions to explore:**
+- What problem are we solving? Why does it matter?
+- Who is this for? What's their current experience?
+- What does success look like from the user's perspective?
+- What are the must-haves vs nice-to-haves?
+- What's explicitly out of scope?
+- Are there constraints (timeline, budget, technical limitations)?
+- Are there existing patterns or conventions we should follow?
 
-**Presenting the design:**
-- Once you believe you understand what you're building, present the design
+**Presenting the requirements:**
+- Once you believe you understand what they want, present the requirements
 - Break it into sections of 200-300 words
 - Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
 
-## After the Design
+## After the Requirements
 
 **Save location:**
 
@@ -67,12 +87,11 @@ When this skill is invoked:
 
 2. **If no project folder**, ask:
    ```
-   Save this design to a project folder?
+   Save this spec to a project folder?
    
    1. Create new folder (provide ticket + feature name)
    2. Use existing folder: [list recent without spec.md]
-   3. Save to docs/plans/ (legacy)
-   4. Skip saving
+   3. Skip saving
    ```
 
 **If creating new project folder:**
@@ -82,22 +101,36 @@ When this skill is invoked:
 
 **spec.md format:**
 ```markdown
-# Design: [Topic]
+# Spec: [Topic]
 
 **Project:** [folder-name]
 **Created:** YYYY-MM-DD
 
 ## Problem Statement
-[What we're solving]
+[What problem we're solving and why it matters]
 
-## Design Summary
-[Chosen approach]
+## Goals
+[What we're trying to achieve - user-facing outcomes]
 
-## Detailed Design
-[Full design]
+## Requirements
 
-## Alternatives Considered
-[Other options and why not chosen]
+### Must Have
+- [Critical requirements - the feature doesn't work without these]
+
+### Should Have
+- [Important but flexible - can adjust approach]
+
+### Won't Have (Out of Scope)
+- [Explicitly excluded to prevent scope creep]
+
+## Success Criteria
+[How we'll know we're done - from the user's perspective, not technical metrics]
+
+## Constraints
+[Timeline, budget, technical limitations, dependencies, etc.]
+
+## Open Questions
+[Things we need to validate during codebase research]
 
 ## Next Steps
 - [ ] Research codebase: `/research-codebase [folder-name]`
@@ -106,17 +139,17 @@ When this skill is invoked:
 
 **Git commits:**
 - Project folder saves (`~/brain/`): No commit (outside project repo)
-- Legacy saves (`docs/plans/`): Commit with "Add design: <topic>"
 
 ## Context Integration
 
-**Handoff:** After spec approval, next step is `/research-codebase [folder-name]` to validate assumptions and gather implementation details.
+**Handoff:** After spec approval, next step is `/research-codebase [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
 
 ## Key Principles
 
 - **One question at a time** - Don't overwhelm with multiple questions
 - **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design in sections, validate each
+- **Stay in your lane** - Requirements, not implementation
+- **YAGNI ruthlessly** - Push back on unnecessary requirements
+- **Incremental validation** - Present in sections, validate each
 - **Be flexible** - Go back and clarify when something doesn't make sense
+- **Capture uncertainty** - Open questions go in the spec for research to answer
