@@ -11,69 +11,37 @@ You are tasked with creating detailed implementation plans through an interactiv
 
 When this command is invoked:
 
-1. **Check for project folder argument**
-   - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
-     - Read `spec.md` if it exists (understand design decisions from brainstorming)
-     - Read `research.md` if it exists for context
-     - Inform user: "Using project folder [name]. Research context loaded."
-     - Proceed to research phase with this context
-   - If argument is a file path (e.g., `thoughts/allison/tickets/eng_1234.md`):
-     - Read the file as before (legacy behavior)
-     - Begin the research process
-   - If no argument, proceed to auto-detection
-
-2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders from last 30 days in `~/brain/thoughts/shared/`
-   - If recent folders found, ask:
-     ```
-     I found recent project folders:
-     
-     1. [folder-name-1] (has research.md)
-     2. [folder-name-2] (has research.md)
-     3. Start a new project
-     
-     Enter a number, or describe what you'd like to plan:
-     ```
-   
-   If user selects a folder, read `research.md` from that folder for context.
-
-3. **If no folders or user wants new**, respond with:
-   ```
-   I'll help you create a detailed implementation plan. Let me start by understanding what we're building.
-
-   Please provide:
-   1. The task/ticket description (or reference to a ticket file)
-   2. Any relevant context, constraints, or specific requirements
-   3. Links to related research or previous implementations
-
-   I'll analyze this information and work with you to create a comprehensive plan.
-
-   Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/allison/tickets/eng_1234.md`
-   For deeper analysis, try: `/create_plan think deeply about thoughts/allison/tickets/eng_1234.md`
-   ```
-
-Then wait for the user's input.
+**Require project folder argument**
+  - If no argument provided, respond with:
+    ```
+    /create-plan [project-folder]
+      
+    Please provide a project folder name (e.g., `2025-01-27-ENG-1234-feature`).
+    ```
+    STOP and wait for user input.
+  
+  - If argument provided:
+    - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+    - If folder doesn't exist, inform user and stop
+    - Verify `spec.md` and `research.md` exist
+    - If either file is missing, inform user and stop
+    - Inform user: "Using project folder [name]. Spec/Research artifacts found."
 
 ## Process Steps
 
 ### Step 1: Context Gathering & Initial Analysis
 
-1. **Read all mentioned files immediately and FULLY**:
-   - Ticket files (e.g., `thoughts/allison/tickets/eng_1234.md`)
-   - Research documents
-   - Related implementation plans
-   - Any JSON/data files mentioned
+1. **Read `spec.md` and `research.md` FULLY**:
+2. - inform user
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
    - **CRITICAL**: DO NOT spawn sub-tasks before reading these files yourself in the main context
-   - **NEVER** read files partially - if a file is mentioned, read it completely
+   - **NEVER** read files partially, read it completely
 
 2. **Spawn initial research tasks to gather context**:
    Before asking the user any questions, use specialized agents to research in parallel:
 
    - Use the **codebase-locator** agent to find all files related to the ticket/task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If a Linear ticket is mentioned, use the **linear-ticket-reader** agent to get full details
 
    These agents will:
    - Find relevant source files, configs, and tests
@@ -87,14 +55,14 @@ Then wait for the user's input.
    - This ensures you have complete understanding before proceeding
 
 4. **Analyze and verify understanding**:
-   - Cross-reference the ticket requirements with actual code
+   - Cross-reference the `spec.md` requirements with actual code
    - Identify any discrepancies or misunderstandings
    - Note assumptions that need verification
    - Determine true scope based on codebase reality
 
 5. **Present informed understanding and focused questions**:
    ```
-   Based on the ticket and my research of the codebase, I understand we need to [accurate summary].
+   Based on the spec and my research of the codebase, I understand we need to [accurate summary].
 
    I've found that:
    - [Current implementation detail with file:line reference]
@@ -129,9 +97,6 @@ After getting initial clarifications:
    - **codebase-locator** - To find more specific files (e.g., "find all files that handle [specific component]")
    - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
    - **codebase-pattern-finder** - To find similar features we can model after
-
-   **For related tickets:**
-   - **linear-searcher** - To find similar issues or past implementations
 
    Each agent knows how to:
    - Find the right files and code patterns
@@ -187,9 +152,7 @@ Once aligned on approach:
 After structure approval:
 
 1. **Determine save location:**
-   - If working with a project folder: save to `~/brain/thoughts/shared/[folder]/plan.md`
-   - If no project folder but user wants one: create it first with `mkdir -p ~/brain/thoughts/shared/YYYY-MM-DD-ENG-XXXX-feature-name`
-   - Legacy fallback: `~/brain/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   - save to `~/brain/thoughts/shared/[folder]/plan.md`
    
    **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
    - YYYY-MM-DD is today's date
@@ -452,15 +415,14 @@ tasks = [
 ## Example Interaction Flow
 
 ```
-User: /create_plan
-Assistant: I'll help you create a detailed implementation plan...
+User: /create-plan 2025-01-27-ENG-1478-parent-child-tracking
+Assistant: Using project folder 2025-01-27-ENG-1478-parent-child-tracking. Spec/Research artifacts found.
 
-User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/allison/tickets/eng_1478.md
-Assistant: Let me read that ticket file completely first...
+Let me read the spec and research files completely...
 
-[Reads file fully]
+[Reads spec.md and research.md fully]
 
-Based on the ticket, I understand we need to track parent-child relationships for Claude sub-task events in the hld daemon. Before I start planning, I have some questions...
+Based on the spec, I understand we need to track parent-child relationships for Claude sub-task events in the hld daemon. I'm now spawning research tasks to understand the current implementation...
 
 [Interactive process continues...]
 ```
