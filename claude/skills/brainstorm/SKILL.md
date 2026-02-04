@@ -134,11 +134,17 @@ When this skill is invoked:
 
 ## Next Steps
 - [ ] Research codebase: `/research-codebase [folder-name]`
-- [ ] Create plan: `/create-plan [folder-name]`
 ```
 
 **Git commits:**
 - Project folder saves (`~/brain/`): No commit (outside project repo)
+
+**After saving, always present the next step:**
+```
+Spec saved to [folder]/spec.md
+
+Ready to research the codebase? `/research-codebase [folder-name]`
+```
 
 ## Context Integration
 
