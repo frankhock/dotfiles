@@ -418,6 +418,29 @@ RSpec.describe RalphLoop do
     ensure
       FileUtils.rm_rf(run_dir) if Dir.exist?(run_dir)
     end
+
+    it "resets running tasks to pending in the JSON file" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [
+          { "id" => "t1", "status" => "running" },
+          { "id" => "t2", "status" => "passed" },
+          { "id" => "t3", "status" => "running" }
+        ]
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+
+      r = build_ralph(prd_file: prd_path, run_dir: run_dir, running_pids: {}, process_groups: {})
+
+      r.send(:cleanup)
+
+      saved = JSON.parse(File.read(prd_path))
+      expect(saved["tasks"][0]["status"]).to eq("pending")
+      expect(saved["tasks"][1]["status"]).to eq("passed")
+      expect(saved["tasks"][2]["status"]).to eq("pending")
+    ensure
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir) if Dir.exist?(run_dir)
+    end
   end
 
   # ─── Option parsing ──────────────────────────────────────────────

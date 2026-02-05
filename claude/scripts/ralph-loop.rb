@@ -517,11 +517,33 @@ class RalphLoop
     sleep 0.5
     system("pkill -9 -f 'claude --print' 2>/dev/null")
 
+    # Reset any "running" tasks back to "pending" so they retry on next run
+    reset_running_tasks_to_pending
+
     # Clean up master PID file
     FileUtils.rm_f(MASTER_PID_FILE)
 
     # Clean up run directory
     FileUtils.rm_rf(@run_dir) if @run_dir && Dir.exist?(@run_dir)
+  end
+
+  def reset_running_tasks_to_pending
+    return unless @prd_file && File.exist?(@prd_file)
+
+    prd = JSON.parse(File.read(@prd_file))
+    return unless prd["tasks"].is_a?(Array)
+
+    changed = false
+    prd["tasks"].each do |task|
+      if task["status"] == "running"
+        task["status"] = "pending"
+        changed = true
+      end
+    end
+
+    File.write(@prd_file, JSON.pretty_generate(prd)) if changed
+  rescue StandardError
+    # Best-effort — don't let JSON errors prevent the rest of cleanup
   end
 
   def kill_all_processes
