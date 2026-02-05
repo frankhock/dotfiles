@@ -44,3 +44,12 @@ ralph() {
 
   ruby ~/dotfiles/claude/scripts/ralph-loop.rb "${args[@]}"
 }
+
+# List projects for quick selection and clipboard copy
+lsp() {
+  local project_dir="$HOME/brain/thoughts/shared"
+  local selection
+
+  selection=$(ls -1 "$project_dir" | grep -v '^\.' | sort -r | fzf --height=40% --reverse)
+  [[ -n "$selection" ]] && echo "$selection" | pbcopy && echo "Copied: $selection"
+}
