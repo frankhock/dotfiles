@@ -33,6 +33,9 @@ class RalphLoop
     reset: "\e[0m"
   }.freeze
 
+  # Status values
+  STATUSES = %w[pending running passed failed].freeze
+
   def initialize
     @prd_file = nil
     @prompt_file_override = nil
@@ -182,94 +185,161 @@ class RalphLoop
     puts "#{bc} ⠀⢀⠼⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠈⣧⠀⠀⠀⠀⠀#{x}"
     puts "#{bc} ⠀⡏⠀⠘⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀#{x}"
     puts
-    puts "#{colorize(:yellow, 'Project:')}       #{@project_name}"
-    puts "#{colorize(:yellow, 'Working Dir:')}   #{Dir.pwd}"
-    puts "#{colorize(:yellow, 'PRD File:')}      #{@prd_file}"
-    puts "#{colorize(:yellow, 'Prompt File:')}   #{@prompt_file}"
-    puts "#{colorize(:yellow, 'Max Parallel:')}  #{@max_parallel}"
-    puts "#{colorize(:yellow, 'Check Delay:')}   #{@check_delay}s"
-    puts "#{colorize(:yellow, 'Run Dir:')}       #{@run_dir}"
+    puts colorize(:yellow, "Ralph Loop") + " | " + @project_name
+  end
+
+  def hyperlink(path, text)
+    "\e]8;;file://#{path}\e\\#{text}\e]8;;\e\\"
+  end
+
+  def clear_screen
+    print "\e[2J\e[H"  # Clear screen and move cursor to top-left
+  end
+
+  def render_progress_bar(passed, total, width: 30)
+    return "[" + "░" * width + "] 0% (0/0 passed)" if total == 0
+
+    percent = (passed.to_f / total * 100).round
+    filled = (passed.to_f / total * width).round
+    empty = width - filled
+
+    bar = "█" * filled + "░" * empty
+    "[#{bar}] #{percent}% (#{passed}/#{total} passed)"
+  end
+
+  def render_status_line(running, failed, pending)
+    parts = []
+    parts << colorize(:cyan, "#{running} running") if running > 0
+    parts << colorize(:red, "#{failed} failed") if failed > 0
+    parts << colorize(:gray, "#{pending} pending") if pending > 0
+    parts.join(" | ")
+  end
+
+  def render_task_list
+    puts "Tasks:"
+    @prd["tasks"].each do |task|
+      id = task["id"]
+      title = task["title"] || "Untitled"
+      status = task["status"] || "pending"
+
+      # Truncate title to fit
+      max_title = 40
+      title = title[0, max_title - 3] + "..." if title.length > max_title
+
+      case status
+      when "passed"
+        status_str = colorize(:green, "passed ")
+        pid_str = ""
+      when "running"
+        pid = @running_pids[id]
+        status_str = colorize(:cyan, "running")
+        pid_str = pid ? "  (PID #{pid})" : ""
+      when "failed"
+        status_str = colorize(:red, "failed ")
+        pid_str = ""
+      else # pending
+        status_str = colorize(:gray, "pending")
+        pid_str = ""
+      end
+
+      puts "  #{id}  #{status_str}  #{title}#{pid_str}"
+    end
+  end
+
+  def render_footer(seconds_remaining)
     puts
-    puts "#{colorize(:cyan, 'Master PID:')}    #{Process.pid} (use 'ralph-loop --kill' to stop)"
-    puts
+    puts colorize(:blue, "━" * 64)
+    puts "PID: #{Process.pid} | Next check in #{seconds_remaining}s... (Ctrl+C to stop)"
   end
 
   def main_loop
-    iteration = 0
-
     until @should_exit
-      iteration += 1
-
-      puts
-      puts colorize(:blue, "━" * 64)
-      puts colorize(:yellow, "Iteration #{iteration}")
-      puts colorize(:blue, "━" * 64)
-
       # Reload PRD to get latest status
       unless reload_prd
-        puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-        interruptible_sleep(@check_delay)
+        sleep 1
         next
       end
 
       # Validate tasks array exists
       unless @prd["tasks"].is_a?(Array)
-        error "prd.json missing 'tasks' array (skipping iteration)"
-        puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-        interruptible_sleep(@check_delay)
+        error "ralph-tasks.json missing 'tasks' array"
+        sleep 1
         next
       end
 
-      # Check on running tasks
+      # Update running task statuses in JSON
+      sync_running_status
+
+      # Check on running tasks (reap finished processes)
       check_running_tasks
 
       # Get current counts
-      done_count = count_by_passes(true)
-      total = @prd["tasks"].length  # Safe: validated as Array above
+      passed_count = count_by_status("passed")
+      running_count = count_by_status("running")
+      failed_count = count_by_status("failed")
+      pending_count = count_by_status("pending")
+      total = @prd["tasks"].length
 
-      # Check if all done
-      if done_count >= total && total > 0
-        show_status
+      # Render full TUI
+      clear_screen
+      puts
+      display_banner
+
+      puts colorize(:blue, "━" * 64)
+      prd_link = hyperlink(File.expand_path(@prd_file), "PRD: #{File.basename(@prd_file)}")
+      prompt_link = hyperlink(File.expand_path(@prompt_file), "Prompt: #{File.basename(@prompt_file)}")
+      puts colorize(:gray, "#{prd_link} | #{prompt_link}")
+      puts
+      puts render_progress_bar(passed_count, total)
+      puts
+      puts render_status_line(running_count, failed_count, pending_count)
+
+      render_task_list
+
+      # Check if all done (passed or failed, none pending/running)
+      if pending_count == 0 && running_count == 0 && total > 0
         puts
-        success "🎉 All tasks completed!"
-        success "   \"I'm a helper!\" - Ralph Wiggum"
 
-        # Update completion timestamp
+        if failed_count == 0
+          success "All tasks completed!"
+          puts
+          success "🚌 \"I'm a helper!\" - Ralph Wiggum"
+        else
+          warn_msg "Finished with #{failed_count} failed task(s)"
+        end
+
         @prd["completedAt"] = Time.now.utc.iso8601
         save_prd
-
-        exit 0
+        exit(failed_count > 0 ? 1 : 0)
       end
 
       # Start new tasks if we have capacity
-      running_count = @running_pids.count { |_, pid| process_alive?(pid) }
-      available = @max_parallel - running_count
+      actual_running = @running_pids.count { |_, pid| process_alive?(pid) }
+      available = @max_parallel - actual_running
 
       if available > 0
-        pending_tasks = tasks_by_passes(false).reject { |t| @running_pids.key?(t["id"]) }
+        pending_tasks = tasks_by_status("pending")
 
         pending_tasks.each do |task|
           break if available <= 0
-
           start_task(task["id"])
           available -= 1
-          sleep 1 # Small delay between spawns
+          sleep 0.5  # Small delay between spawns
         end
       end
 
-      show_status
+      # Countdown with TUI refresh each second
+      puts
+      @check_delay.times do |i|
+        break if @should_exit
 
-      # Check if stuck
-      running_count = @running_pids.count { |_, pid| process_alive?(pid) }
-      pending = count_pending
+        remaining = @check_delay - i
 
-      if running_count == 0 && pending == 0 && done_count < total
-        warn_msg "No tasks running and none pending. Check ralph-tasks.json."
-        exit 1
+        print "\r" + " " * 80 + "\r"  # Clear line
+        print "Next check in #{remaining}s... (Ctrl+C to stop)"
+
+        sleep 1
       end
-
-      puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-      interruptible_sleep(@check_delay)
     end
   end
 
@@ -281,25 +351,26 @@ class RalphLoop
     false
   end
 
+  def sync_running_status
+    # Mark tasks as "running" if we have their PID
+    @prd["tasks"].each do |task|
+      if @running_pids.key?(task["id"]) && process_alive?(@running_pids[task["id"]])
+        task["status"] = "running" unless task["status"] == "passed" || task["status"] == "failed"
+      end
+    end
+  end
+
   def save_prd
     File.write(@prd_file, JSON.pretty_generate(@prd))
   end
 
-  def tasks_by_passes(passes_value)
+  def tasks_by_status(status_value)
     return [] unless @prd["tasks"].is_a?(Array)
-
-    @prd["tasks"].select { |t| t["passes"] == passes_value }
+    @prd["tasks"].select { |t| t["status"] == status_value }
   end
 
-  def count_by_passes(passes_value)
-    tasks_by_passes(passes_value).length
-  end
-
-  def count_pending
-    return 0 unless @prd["tasks"].is_a?(Array)
-
-    # Pending = passes:false AND not currently running
-    @prd["tasks"].count { |t| !t["passes"] && !@running_pids.key?(t["id"]) }
+  def count_by_status(status_value)
+    tasks_by_status(status_value).length
   end
 
   def start_task(task_id)
@@ -310,8 +381,6 @@ class RalphLoop
     prompt_content = File.read(@prompt_file)
     task_prompt = "# YOUR ASSIGNED TASK ID: #{task_id}\n\n#{prompt_content}"
     File.write(prompt_file_path, task_prompt)
-
-    success "▶ Starting Claude for task #{task_id}"
 
     # Spawn claude via bash, reading prompt from file via stdin
     cmd = "claude --print --dangerously-skip-permissions < #{prompt_file_path.shellescape}"
@@ -324,120 +393,55 @@ class RalphLoop
 
     @running_pids[task_id] = pid
 
-    puts colorize(:cyan, "  PID: #{pid}")
-    puts colorize(:cyan, "  Log: #{log_file}")
+    # Update status in JSON
+    task = @prd["tasks"].find { |t| t["id"] == task_id }
+    if task
+      task["status"] = "running"
+      save_prd
+    end
   end
 
   def check_running_tasks
-    puts colorize(:cyan, "Checking #{@running_pids.length} running tasks...")
-
-    # Collect finished tasks (can't modify hash while iterating)
     finished_tasks = []
 
     @running_pids.each do |task_id, pid|
-      # Try to reap the process first (catches zombies)
       begin
         result = Process.waitpid2(pid, Process::WNOHANG)
         if result
-          # Process has exited
           _, status = result
           exit_code = status&.exitstatus || 0
-          puts colorize(:cyan, "  Task #{task_id} (PID #{pid}): FINISHED (exit #{exit_code})")
           finished_tasks << [task_id, pid, exit_code]
           next
         end
       rescue Errno::ECHILD
-        # No child process - already reaped or not our child
-        puts colorize(:cyan, "  Task #{task_id} (PID #{pid}): FINISHED (no child)")
         finished_tasks << [task_id, pid, 0]
         next
       end
-
-      # Process still running
-      puts colorize(:cyan, "  Task #{task_id} (PID #{pid}): still running")
     end
 
-    # Process finished tasks
     finished_tasks.each do |task_id, pid, exit_code|
       process_finished_task(task_id, pid, exit_code)
     end
   end
 
-  def process_finished_task(task_id, pid, exit_code)
-    log_file = File.join(@run_dir, "#{task_id}.log")
-    task_completed = exit_code == 0
+  def process_finished_task(task_id, _pid, exit_code)
+    task = @prd["tasks"].find { |t| t["id"] == task_id }
 
-    if task_completed
-      success "✓ Task #{task_id} completed (exit 0)"
-    else
-      error "✗ Task #{task_id} failed (exit #{exit_code})"
-    end
-
-    # Mark task as passed if completed successfully
-    if task_completed
-      task = @prd["tasks"].find { |t| t["id"] == task_id }
-      if task
-        task["passes"] = true
-        save_prd
-        success "  Updated #{task_id} passes=true in #{@prd_file}"
+    if task
+      if exit_code == 0
+        task["status"] = "passed"
       else
-        error "  Could not find task #{task_id} in tasks array!"
-        error "  Available IDs: #{@prd["tasks"].map { |t| t["id"] }.join(", ")}"
+        task["status"] = "failed"
       end
-    end
-
-    # Show last output
-    if File.exist?(log_file)
-      lines = File.readlines(log_file)
-      if lines.any?
-        puts colorize(:cyan, "  Last output:")
-        lines.last(5).each { |line| puts "    #{line}" }
-      else
-        warn_msg "  (No output in log)"
-      end
+      save_prd
     end
 
     # Clean up
     @running_pids.delete(task_id)
+
+    # Remove log file
+    log_file = File.join(@run_dir, "#{task_id}.log")
     FileUtils.rm_f(log_file)
-  end
-
-  def show_status
-    reload_prd
-
-    running = @running_pids.count { |_, pid| process_alive?(pid) }
-    done_count = count_by_passes(true)
-    pending = count_pending
-    tasks = @prd["tasks"]
-    total = tasks.is_a?(Array) ? tasks.length : 0
-
-    puts
-    puts colorize(:blue, "═" * 64)
-
-    status_parts = [
-      "Progress: #{done_count}/#{total} passed",
-      "#{running} running",
-      "#{pending} pending"
-    ]
-
-    puts colorize(:yellow, status_parts.join(" | "))
-    puts colorize(:blue, "═" * 64)
-
-    # Show running processes
-    if running > 0
-      puts colorize(:cyan, "Running:")
-      @running_pids.each do |task_id, pid|
-        next unless process_alive?(pid)
-
-        log_file = File.join(@run_dir, "#{task_id}.log")
-        if File.exist?(log_file)
-          lines = File.readlines(log_file).length
-          puts "  Task #{task_id}: PID #{pid} (#{lines} lines of output)"
-        else
-          puts "  Task #{task_id}: PID #{pid}"
-        end
-      end
-    end
   end
 
   def process_alive?(pid)
@@ -448,35 +452,37 @@ class RalphLoop
   end
 
   def cleanup
-    warn_msg "Cleaning up Claude processes..."
+    # Only show cleanup messages if there are processes to clean up
+    running = @running_pids.select { |_, pid| process_alive?(pid) }
 
-    # Kill all tracked process groups (negative PID kills entire group)
-    @running_pids.each do |task_id, pid|
-      next unless process_alive?(pid)
+    if running.any?
+      puts
+      warn_msg "Cleaning up #{running.length} Claude process(es)..."
 
-      warn_msg "  Stopping task #{task_id} (PGID: #{pid})"
-      begin
-        Process.kill("-TERM", pid)  # Kill entire process group
-      rescue Errno::ESRCH, Errno::EPERM
-        # Already dead or no permission
+      # Kill all tracked process groups (negative PID kills entire group)
+      running.each do |task_id, pid|
+        warn_msg "  Stopping task #{task_id} (PGID: #{pid})"
+        begin
+          Process.kill("-TERM", pid)
+        rescue Errno::ESRCH, Errno::EPERM
+          # Already dead or no permission
+        end
       end
-    end
 
-    sleep 1
+      sleep 1
 
-    # Force kill remaining process groups
-    @running_pids.each do |_, pid|
-      begin
-        Process.kill("-KILL", pid) if process_alive?(pid)
-      rescue Errno::ESRCH, Errno::EPERM
-        # Already dead or no permission
+      # Force kill remaining process groups
+      running.each do |_, pid|
+        begin
+          Process.kill("-KILL", pid) if process_alive?(pid)
+        rescue Errno::ESRCH, Errno::EPERM
+          # Already dead or no permission
+        end
       end
     end
 
     # Clean up run directory
     FileUtils.rm_rf(@run_dir) if @run_dir && Dir.exist?(@run_dir)
-
-    warn_msg "Check prd.json for progress"
   end
 
   def kill_all_processes

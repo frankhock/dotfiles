@@ -25,15 +25,15 @@ When this command is invoked:
 - If argument provided:
   - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
   - If folder doesn't exist, inform user and stop
-  - Verify `spec.md` and `research.md` exist
-  - If either file is missing, inform user and stop
+  - Verify `spec.md` exists
+  - If file is missing, inform user and stop
   - Inform user: "Using project folder [name]. Spec/Research artifacts found."
 
 ## Process Steps
 
 ### Step 1: Context Gathering & Initial Analysis
 
-1. **Read `spec.md` and `research.md` FULLY**:
+1. **Read `spec.md` and `research.md` (if available) FULLY**:
    - Inform user you're reading the files
    - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
    - **CRITICAL**: DO NOT spawn sub-tasks before reading these files yourself in the main context
@@ -201,7 +201,7 @@ After structure approval:
         "Lint passes"
       ],
       "priority": 1,
-      "passes": false
+      "status": "pending"
     }
   ]
 }
@@ -225,7 +225,7 @@ After structure approval:
 
 **IDs**: Sequential T-001, T-002, etc.
 
-**Initial State**: All tasks start with `passes: false`
+**Initial State**: All tasks start with `"status": "pending"`
 
 ---
 
