@@ -395,9 +395,9 @@ RSpec.describe RalphLoop do
       # Spawn with pgroup: true to match how start_task spawns (cleanup uses -TERM on pgid)
       pid = Process.spawn("sleep 60", pgroup: true)
 
-      r = build_ralph(run_dir: run_dir, running_pids: { "t1" => pid })
+      r = build_ralph(run_dir: run_dir, running_pids: { "t1" => pid }, process_groups: { "t1" => pid })
 
-      expect { r.send(:cleanup) }.to output(/Cleaning up/).to_stdout
+      expect { r.send(:cleanup) }.to output(/Cleaning up/).to_stderr
 
       # Reap the child so process_alive? returns false
       Process.wait(pid) rescue nil
@@ -411,9 +411,9 @@ RSpec.describe RalphLoop do
 
     it "does nothing when no processes are running" do
       run_dir = Dir.mktmpdir("ralph-run-")
-      r = build_ralph(run_dir: run_dir, running_pids: {})
+      r = build_ralph(run_dir: run_dir, running_pids: {}, process_groups: {})
 
-      expect { r.send(:cleanup) }.not_to output(/Cleaning up/).to_stdout
+      expect { r.send(:cleanup) }.not_to output(/Cleaning up/).to_stderr
       expect(Dir.exist?(run_dir)).to be false
     ensure
       FileUtils.rm_rf(run_dir) if Dir.exist?(run_dir)

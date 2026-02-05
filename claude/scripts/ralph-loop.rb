@@ -43,7 +43,9 @@ class RalphLoop
     @check_delay = nil
     @run_dir = "/tmp/ralph-loop-#{Process.pid}"
     @running_pids = {} # task_id => pid
+    @process_groups = {} # task_id => pgid (for reliable group kills)
     @should_exit = false
+    @cleaning_up = false
   end
 
   def run
@@ -151,9 +153,10 @@ class RalphLoop
   def setup_signal_handlers
     %w[INT TERM].each do |signal|
       Signal.trap(signal) do
-        puts "\n"
-        warn_msg "Interrupted!"
+        # Signal handlers should be minimal — set flag and exit.
+        # exit triggers at_exit which does the actual cleanup.
         @should_exit = true
+        exit 1
       end
     end
 
@@ -395,6 +398,7 @@ class RalphLoop
     File.write(prompt_file_path, task_prompt)
 
     # Spawn claude via bash, reading prompt from file via stdin
+    # pgroup: true gives the child its own process group (PGID = child PID)
     cmd = "claude --print --dangerously-skip-permissions < #{prompt_file_path.shellescape}"
     pid = Process.spawn(
       "/bin/bash", "-c", cmd,
@@ -404,6 +408,7 @@ class RalphLoop
     )
 
     @running_pids[task_id] = pid
+    @process_groups[task_id] = pid  # With pgroup: true, PGID == child PID
 
     # Update status in JSON
     task = @prd["tasks"].find { |t| t["id"] == task_id }
@@ -448,8 +453,9 @@ class RalphLoop
       save_prd
     end
 
-    # Clean up
+    # Clean up tracking
     @running_pids.delete(task_id)
+    @process_groups.delete(task_id)
 
     # Remove log file
     log_file = File.join(@run_dir, "#{task_id}.log")
@@ -464,34 +470,55 @@ class RalphLoop
   end
 
   def cleanup
-    # Only show cleanup messages if there are processes to clean up
-    running = @running_pids.select { |_, pid| process_alive?(pid) }
+    # Guard against re-entrancy (exit inside at_exit triggers at_exit again)
+    return if @cleaning_up
+    @cleaning_up = true
 
-    if running.any?
-      puts
-      warn_msg "Cleaning up #{running.length} Claude process(es)..."
+    # Collect all process groups we need to kill
+    pgids_to_kill = @process_groups.values.uniq
 
-      # Kill all tracked process groups (negative PID kills entire group)
-      running.each do |task_id, pid|
-        warn_msg "  Stopping task #{task_id} (PGID: #{pid})"
+    if pgids_to_kill.any?
+      $stderr.puts "\nCleaning up #{pgids_to_kill.length} Claude process group(s)..."
+
+      # TERM the entire process group (negative PID = kill group)
+      pgids_to_kill.each do |pgid|
         begin
-          Process.kill("-TERM", pid)
+          Process.kill("-TERM", pgid)
         rescue Errno::ESRCH, Errno::EPERM
           # Already dead or no permission
         end
       end
 
-      sleep 1
+      # Give processes a moment to exit gracefully
+      sleep 2
 
-      # Force kill remaining process groups
-      running.each do |_, pid|
+      # Force kill any survivors
+      pgids_to_kill.each do |pgid|
         begin
-          Process.kill("-KILL", pid) if process_alive?(pid)
+          Process.kill("-KILL", pgid)
         rescue Errno::ESRCH, Errno::EPERM
           # Already dead or no permission
+        end
+      end
+
+      # Reap zombies
+      @running_pids.each_value do |pid|
+        begin
+          Process.waitpid(pid, Process::WNOHANG)
+        rescue Errno::ECHILD
+          # Already reaped
         end
       end
     end
+
+    # Fallback: pkill any claude --print processes we may have missed
+    # (e.g., if a child was reparented to init/launchd)
+    system("pkill -TERM -f 'claude --print' 2>/dev/null")
+    sleep 0.5
+    system("pkill -9 -f 'claude --print' 2>/dev/null")
+
+    # Clean up master PID file
+    FileUtils.rm_f(MASTER_PID_FILE)
 
     # Clean up run directory
     FileUtils.rm_rf(@run_dir) if @run_dir && Dir.exist?(@run_dir)
