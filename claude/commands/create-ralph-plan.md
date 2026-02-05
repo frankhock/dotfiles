@@ -121,62 +121,99 @@ After getting initial clarifications:
    Which approach aligns best with your vision?
    ```
 
-### Step 3: Task Structure Development
+### Step 3: Task Structure
 
-Once aligned on approach:
+Once aligned on approach, present a JSON task skeleton for approval. This is just the shape — ids, titles, one-line descriptions in execution order.
 
-1. **Create initial task outline**:
+1. **Present task skeleton**:
+   ```json
+   {
+     "project": "[Project Name]",
+     "tasks": [
+       { "id": "T-001", "title": "[Imperative verb phrase]", "description": "[One-liner]" },
+       { "id": "T-002", "title": "[Imperative verb phrase]", "description": "[One-liner]" },
+       { "id": "T-003", "title": "[Imperative verb phrase]", "description": "[One-liner]" }
+     ]
+   }
    ```
-   Here's my proposed task structure:
-
-   ## Overview
-   [1-2 sentence summary]
-
-   ## Tasks:
-   1. T-001: [Task name] - [what it accomplishes]
-   2. T-002: [Task name] - [what it accomplishes]
-   3. T-003: [Task name] - [what it accomplishes]
-
-   Does this breakdown make sense? Should I adjust the order or granularity?
+   ```
+   Does this breakdown make sense?
+   - Is the execution order correct (earlier tasks cannot depend on later ones)?
+   - Should any tasks be split or merged?
+   - Is the granularity right (each task = one Claude context window)?
    ```
 
-2. **Get feedback on structure** before writing details
+2. **Get approval on structure** before investing in details. Iterate until the breakdown is right.
 
-### Step 4: Write Output Files
+### Step 4: Flesh Out Tasks
 
-After structure approval:
+After structure approval, develop the full `ralph-tasks.json` content (reference format below) — complete descriptions, acceptance criteria, and config fields.
 
-1. **Write ralph-tasks.json** to `~/brain/thoughts/shared/[folder]/ralph-tasks.json`
-2. **Write ralph-prompt.md** to `~/brain/thoughts/shared/[folder]/ralph-prompt.md`
+1. **Fill in task details** for every task:
+   - `description`: 2-3 sentences of what needs to be done
+   - `acceptanceCriteria`: specific, verifiable criteria (see Task Rules below)
+   - `status`: always `"pending"`
 
-### Step 5: Sync and Review
+2. **Add config fields**:
+   - `maxParallel`: how many tasks can run concurrently (default 1)
+   - `checkInterval`: seconds between status checks (default 15)
+   - `promptFile`: relative path to the prompt file (e.g., `"~/brain/thoughts/shared/[folder]/ralph-prompt.md"`)
 
-1. **Present the output file locations**:
+3. **Present the complete `ralph-tasks.json` inline** for review:
    ```
-   I've created the Ralph execution files at:
+   Here's the full ralph-tasks.json:
+
+   [complete JSON]
+
+   Review checklist:
+   - Are descriptions clear enough for an autonomous Claude instance?
+   - Are acceptance criteria specific and verifiable?
+   - Is execution order still correct?
+   ```
+
+4. **Get approval** before proceeding. Iterate until the user is satisfied.
+
+### Step 5: Draft Execution Prompt
+
+Now that the tasks are finalized, draft `ralph-prompt.md` — the shared context every Claude instance receives.
+
+1. **Write the prompt using the ralph-prompt.md Format** (see reference section below). Leverage your full knowledge of the tasks to write targeted context.
+
+2. **Present the complete `ralph-prompt.md` inline** for review:
+   ```
+   Here's the ralph-prompt.md:
+
+   [complete markdown]
+
+   This is the shared context every Claude instance receives (prepended with its assigned task ID).
+   Does this give each instance enough context to work autonomously?
+   ```
+
+3. **Get approval** before writing files. Iterate until the user is satisfied.
+
+### Step 6: Write Files & Handoff
+
+After both artifacts are approved:
+
+1. **Write both files**:
    - `~/brain/thoughts/shared/[folder]/ralph-tasks.json`
    - `~/brain/thoughts/shared/[folder]/ralph-prompt.md`
 
-   Please review them and let me know:
-   - Are the tasks properly scoped (one context window each)?
-   - Are the acceptance criteria specific enough?
-   - Any technical details that need adjustment?
+2. **Present file locations and iterate if needed**:
+   ```
+   Written:
+   - `~/brain/thoughts/shared/[folder]/ralph-tasks.json`
+   - `~/brain/thoughts/shared/[folder]/ralph-prompt.md`
+
+   Any final changes before execution?
    ```
 
-2. **Iterate based on feedback** - be ready to:
-   - Split tasks that are too large
-   - Adjust acceptance criteria
-   - Reorder by dependencies
-   - Add/remove scope items
-
-3. **Continue refining** until the user is satisfied
-
-4. **End with handoff**:
+3. **End with handoff**:
    ```
-   Ready to execute: `/ralph-loop`
+   Ready to execute.
 
-   To start: cd to project root, then run:
-   ralph-loop.rb -p ~/brain/thoughts/shared/[folder]/ralph-tasks.json -m ~/brain/thoughts/shared/[folder]/ralph-prompt.md
+   cd to project root, then run:
+   ralph-loop.rb -p ~/brain/thoughts/shared/[folder]/ralph-tasks.json
    ```
 
 ---
@@ -187,9 +224,9 @@ After structure approval:
 {
   "project": "[Project Name]",
   "description": "[Feature description]",
-  "promptFile": "ralph-prompt.md",
-  "maxParallel": 3,
+  "maxParallel": 1,
   "checkInterval": 15,
+  "promptFile": "~/brain/thoughts/shared/[folder]/ralph-prompt.md",
   "tasks": [
     {
       "id": "T-001",
@@ -200,7 +237,6 @@ After structure approval:
         "Another criterion",
         "Lint passes"
       ],
-      "priority": 1,
       "status": "pending"
     }
   ]
@@ -213,7 +249,7 @@ After structure approval:
 - If you can't describe the change in 2-3 sentences, it's too big
 - Split large features: schema -> backend -> UI
 
-**Order**: Tasks execute by priority. Earlier tasks must not depend on later ones.
+**Order**: Tasks execute in array order. Earlier tasks must not depend on later ones.
 - Correct: migration -> server action -> UI component
 - Wrong: UI component -> migration it depends on
 
