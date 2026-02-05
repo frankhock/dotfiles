@@ -8,17 +8,17 @@ RSpec.describe RalphLoop do
   describe "#render_progress_bar" do
     it "shows empty bar when total is 0" do
       result = ralph.send(:render_progress_bar, 0, 0)
-      expect(result).to include("0%").and include("0/0 passed")
+      expect(result).to include("0%").and include("0/0 completed")
     end
 
-    it "shows 50% when half passed" do
+    it "shows 50% when half completed" do
       result = ralph.send(:render_progress_bar, 3, 6)
-      expect(result).to include("50%").and include("3/6 passed")
+      expect(result).to include("50%").and include("3/6 completed")
     end
 
-    it "shows 100% when all passed" do
+    it "shows 100% when all completed" do
       result = ralph.send(:render_progress_bar, 4, 4)
-      expect(result).to include("100%").and include("4/4 passed")
+      expect(result).to include("100%").and include("4/4 completed")
     end
 
     it "respects custom width" do
@@ -76,7 +76,7 @@ RSpec.describe RalphLoop do
         { "id" => "1", "status" => "pending" },
         { "id" => "2", "status" => "running" },
         { "id" => "3", "status" => "pending" },
-        { "id" => "4", "status" => "passed" }
+        { "id" => "4", "status" => "completed" }
       ]
     end
 
@@ -103,7 +103,7 @@ RSpec.describe RalphLoop do
       [
         { "id" => "1", "status" => "pending" },
         { "id" => "2", "status" => "pending" },
-        { "id" => "3", "status" => "passed" }
+        { "id" => "3", "status" => "completed" }
       ]
     end
 
@@ -111,7 +111,7 @@ RSpec.describe RalphLoop do
 
     it "returns correct count" do
       expect(ralph.send(:count_by_status, "pending")).to eq(2)
-      expect(ralph.send(:count_by_status, "passed")).to eq(1)
+      expect(ralph.send(:count_by_status, "completed")).to eq(1)
       expect(ralph.send(:count_by_status, "failed")).to eq(0)
     end
   end
@@ -224,16 +224,16 @@ RSpec.describe RalphLoop do
       Process.wait(pid) rescue nil
     end
 
-    it "does not overwrite passed status" do
+    it "does not overwrite completed status" do
       pid = Process.spawn("sleep 60")
-      tasks = [{ "id" => "t1", "status" => "passed" }]
+      tasks = [{ "id" => "t1", "status" => "completed" }]
       r = build_ralph(
         prd: { "tasks" => tasks },
         running_pids: { "t1" => pid }
       )
 
       r.send(:sync_running_status)
-      expect(tasks[0]["status"]).to eq("passed")
+      expect(tasks[0]["status"]).to eq("completed")
     ensure
       Process.kill("TERM", pid) rescue nil
       Process.wait(pid) rescue nil
@@ -256,7 +256,7 @@ RSpec.describe RalphLoop do
   end
 
   describe "#process_finished_task" do
-    it "marks task as passed on exit code 0" do
+    it "marks task as completed on exit code 0" do
       dir, prd_path, _ = create_fixtures(
         tasks: [{ "id" => "t1", "status" => "running" }]
       )
@@ -269,7 +269,7 @@ RSpec.describe RalphLoop do
       r.send(:process_finished_task, "t1", 999, 0)
 
       saved = JSON.parse(File.read(prd_path))
-      expect(saved["tasks"][0]["status"]).to eq("passed")
+      expect(saved["tasks"][0]["status"]).to eq("completed")
       expect(r.instance_variable_get(:@running_pids)).not_to have_key("t1")
       expect(File.exist?(log_file)).to be false
     ensure
@@ -327,7 +327,7 @@ RSpec.describe RalphLoop do
       r.send(:check_running_tasks)
 
       saved = JSON.parse(File.read(prd_path))
-      expect(saved["tasks"][0]["status"]).to eq("passed")
+      expect(saved["tasks"][0]["status"]).to eq("completed")
       expect(r.instance_variable_get(:@running_pids)).to be_empty
     ensure
       FileUtils.rm_rf(dir)
@@ -423,7 +423,7 @@ RSpec.describe RalphLoop do
       dir, prd_path, _ = create_fixtures(
         tasks: [
           { "id" => "t1", "status" => "running" },
-          { "id" => "t2", "status" => "passed" },
+          { "id" => "t2", "status" => "completed" },
           { "id" => "t3", "status" => "running" }
         ]
       )
@@ -435,7 +435,7 @@ RSpec.describe RalphLoop do
 
       saved = JSON.parse(File.read(prd_path))
       expect(saved["tasks"][0]["status"]).to eq("pending")
-      expect(saved["tasks"][1]["status"]).to eq("passed")
+      expect(saved["tasks"][1]["status"]).to eq("completed")
       expect(saved["tasks"][2]["status"]).to eq("pending")
     ensure
       FileUtils.rm_rf(dir)
@@ -512,7 +512,7 @@ RSpec.describe RalphLoop do
         { "id" => "t1", "status" => "pending", "title" => "Pending task" },
         { "id" => "t2", "status" => "failed", "title" => "Failed task" },
         { "id" => "t3", "status" => "running", "title" => "Running task" },
-        { "id" => "t4", "status" => "passed", "title" => "Passed task" }
+        { "id" => "t4", "status" => "completed", "title" => "Completed task" }
       ]
       r = build_ralph(prd: { "tasks" => tasks })
 
@@ -525,8 +525,8 @@ RSpec.describe RalphLoop do
 
       expect(running_pos).to be < failed_pos
       expect(failed_pos).to be < pending_pos
-      # Passed tasks should not appear
-      expect(output).not_to include("Passed task")
+      # Completed tasks should not appear
+      expect(output).not_to include("Completed task")
     end
 
     it "truncates long titles" do

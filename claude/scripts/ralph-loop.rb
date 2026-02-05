@@ -34,7 +34,7 @@ class RalphLoop
   }.freeze
 
   # Status values
-  STATUSES = %w[pending running passed failed].freeze
+  STATUSES = %w[pending running completed failed].freeze
 
   def initialize
     @prd_file = nil
@@ -199,15 +199,15 @@ class RalphLoop
     print "\e[2J\e[H"  # Clear screen and move cursor to top-left
   end
 
-  def render_progress_bar(passed, total, width: 30)
-    return "[" + "░" * width + "] 0% (0/0 passed)" if total == 0
+  def render_progress_bar(completed, total, width: 30)
+    return "[" + "░" * width + "] 0% (0/0 completed)" if total == 0
 
-    percent = (passed.to_f / total * 100).round
-    filled = (passed.to_f / total * width).round
+    percent = (completed.to_f / total * 100).round
+    filled = (completed.to_f / total * width).round
     empty = width - filled
 
     bar = "█" * filled + "░" * empty
-    "[#{bar}] #{percent}% (#{passed}/#{total} passed)"
+    "[#{bar}] #{percent}% (#{completed}/#{total} completed)"
   end
 
   def render_status_line(running, failed, pending)
@@ -242,8 +242,8 @@ class RalphLoop
       title = title[0, max_title - 3] + "..." if title.length > max_title
 
       case status
-      when "passed"
-        status_str = colorize(:green, "passed ")
+      when "completed"
+        status_str = colorize(:green, "completed")
         pid_str = ""
       when "running"
         pid = @running_pids[id]
@@ -289,7 +289,7 @@ class RalphLoop
       check_running_tasks
 
       # Get current counts
-      passed_count = count_by_status("passed")
+      passed_count = count_by_status("completed")
       running_count = count_by_status("running")
       failed_count = count_by_status("failed")
       pending_count = count_by_status("pending")
@@ -308,10 +308,11 @@ class RalphLoop
       puts render_progress_bar(passed_count, total)
       puts
       puts render_status_line(running_count, failed_count, pending_count)
+      puts
 
       render_task_list
 
-      # Check if all done (passed or failed, none pending/running)
+      # Check if all done (completed or failed, none pending/running)
       if pending_count == 0 && running_count == 0 && total > 0
         puts
 
@@ -370,7 +371,7 @@ class RalphLoop
     # Mark tasks as "running" if we have their PID
     @prd["tasks"].each do |task|
       if @running_pids.key?(task["id"]) && process_alive?(@running_pids[task["id"]])
-        task["status"] = "running" unless task["status"] == "passed" || task["status"] == "failed"
+        task["status"] = "running" unless task["status"] == "completed" || task["status"] == "failed"
       end
     end
   end
@@ -392,9 +393,11 @@ class RalphLoop
     log_file = File.join(@run_dir, "#{task_id}.log")
     prompt_file_path = File.join(@run_dir, "#{task_id}-prompt.txt")
 
-    # Build prompt with task ID and write to temp file
+    # Build prompt with task details injected inline
     prompt_content = File.read(@prompt_file)
-    task_prompt = "# YOUR ASSIGNED TASK ID: #{task_id}\n\n#{prompt_content}"
+    task = @prd["tasks"].find { |t| t["id"] == task_id }
+    task_json = JSON.pretty_generate(task)
+    task_prompt = "# YOUR ASSIGNED TASK\n\n```json\n#{task_json}\n```\n\n#{prompt_content}"
     File.write(prompt_file_path, task_prompt)
 
     # Spawn claude via bash, reading prompt from file via stdin
@@ -446,7 +449,7 @@ class RalphLoop
 
     if task
       if exit_code == 0
-        task["status"] = "passed"
+        task["status"] = "completed"
       else
         task["status"] = "failed"
       end

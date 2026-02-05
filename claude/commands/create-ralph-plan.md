@@ -302,11 +302,7 @@ Template:
 
 ## Your Task
 
-Find your assigned task ID above. Look up that task in ralph-tasks.json to see:
-- Task title and description
-- Acceptance criteria to satisfy
-
-Complete your assigned task. Exit normally (code 0) on success.
+Your assigned task details (id, title, description, acceptance criteria) are injected at the top of this prompt as a JSON block. Complete that task. Exit normally (code 0) on success.
 If you cannot complete the task, explain why and exit with a non-zero code.
 ```
 
