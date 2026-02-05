@@ -1,0 +1,6 @@
+# Shell functions
+
+# Ralph Wiggum Loop - parallel Claude task runner
+ralph() {
+  ruby ~/dotfiles/claude/scripts/ralph-loop.rb "$@"
+}
