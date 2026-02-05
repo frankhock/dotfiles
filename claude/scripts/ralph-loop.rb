@@ -132,7 +132,7 @@ class RalphLoop
   def load_config
     @prd = JSON.parse(File.read(@prd_file))
 
-    @max_parallel ||= @prd["maxParallel"] || 5
+    @max_parallel ||= @prd["maxParallel"] || 1
     @check_delay ||= @prd["checkInterval"] || 15
     @prompt_file = @prompt_file_override || @prd["promptFile"] || "ralph-prompt.md"
     @project_name = @prd["project"] || "Unknown"
