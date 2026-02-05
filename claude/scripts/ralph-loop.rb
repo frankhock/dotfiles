@@ -183,9 +183,6 @@ class RalphLoop
     puts "#{c}      ⠀⢀⠼⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠈⣧⠀⠀⠀⠀⠀#{x}"
     puts "#{c}      ⠀⡏⠀⠘⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀#{x}"
     puts
-    puts colorize(:blue, "╔══════════════════════════════════════════════════════════════╗")
-    puts colorize(:blue, "║          Ralph Wiggum Loop - \"I'm helping!\"                 ║")
-    puts colorize(:blue, "╚══════════════════════════════════════════════════════════════╝")
     puts
     puts "#{colorize(:yellow, 'Project:')}       #{@project_name}"
     puts "#{colorize(:yellow, 'Working Dir:')}   #{Dir.pwd}"
