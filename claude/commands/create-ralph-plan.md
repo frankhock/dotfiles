@@ -270,24 +270,9 @@ Find your assigned task ID above. Look up that task in ralph-tasks.json to see:
 - Task title and description
 - Acceptance criteria to satisfy
 
-Complete your assigned task, then output:
-<promise>TASK_COMPLETE</promise>
-
-If you cannot complete the task, explain why and exit without the promise tag.
+Complete your assigned task. Exit normally (code 0) on success.
+If you cannot complete the task, explain why and exit with a non-zero code.
 ```
-
----
-
-## Completion Signaling
-
-**IMPORTANT**: The prompt template MUST instruct Claude to output `<promise>TASK_COMPLETE</promise>` when done.
-
-ralph-loop.rb checks for this exact string in the output log:
-```ruby
-File.read(log_file).include?("<promise>TASK_COMPLETE</promise>")
-```
-
-Without this tag, tasks will not be marked as complete even if the work succeeded.
 
 ---
 

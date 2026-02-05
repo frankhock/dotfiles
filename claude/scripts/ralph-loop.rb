@@ -28,6 +28,7 @@ class RalphLoop
     yellow: "\e[1;33m",
     blue: "\e[0;34m",
     cyan: "\e[0;36m",
+    gray: "\e[0;90m",
     reset: "\e[0m"
   }.freeze
 
@@ -160,8 +161,30 @@ class RalphLoop
   end
 
   def display_banner
+    y = COLORS[:yellow]
+    c = COLORS[:cyan]
+    g = COLORS[:gray]
+    r = COLORS[:red]
+    x = COLORS[:reset]
+
+    # Head (yellow)
+    puts "#{y}      ⠀⠀⠀⠀⠀⠀⣀⣤⣶⡶⢛⠟⡿⠻⢻⢿⢶⢦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⠀⢀⣠⡾⡫⢊⠌⡐⢡⠊⢰⠁⡎⠘⡄⢢⠙⡛⡷⢤⡀⠀⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⢠⢪⢋⡞⢠⠃⡜⠀⠎⠀⠉⠀⠃⠀⠃⠀⠃⠙⠘⠊⢻⠦⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⢇⡇⡜⠀⠜⠀⠁⠀⢀⠔⠉⠉⠑⠄⠀⠀⡰⠊⠉⠑⡄⡇⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⡸⠧⠄⠀⠀⠀⠀⠀⠘⡀⠾⠀⠀⣸⠀⠀⢧⠀⠛⠀⠌⡇⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠘⡇⠀⠀⠀⠀⠀⠀⠀⠀⠙⠒⠒⠚⠁⠈⠉⠲⡍⠒⠈⠀⡇⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⠈⠲⣆⠀⠀⠀⠀⠀⠀⠀⠀⣠⠖⠉⡹⠤⠶⠁⠀⠀⠀⠈⢦⠀⠀⠀⠀⠀#{x}"
+    puts "#{y}      ⠀⠀⠀⠀⠈⣦⡀⠀⠀⠀⠀⠧⣴⠁⠀⠘⠓⢲⣄⣀⣀⣀⡤⠔⠃⠀⠀⠀⠀⠀#{x}"
+    # Body/shirt (cyan)
+    puts "#{c}      ⠀⠀⠀⠀⣜⠀⠈⠓⠦⢄⣀⣀⣸⠀⠀⠀⠀⠁⢈⢇⣼⡁⠀⠀⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{c}      ⠀⠀⢠⠒⠛⠲⣄⠀⠀⠀⣠⠏⠀⠉⠲⣤⠀⢸⠋⢻⣤⡛⣄⠀⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{c}      ⠀⠀⢡⠀⠀⠀⠀⠉⢲⠾⠁⠀⠀⠀⠀⠈⢳⡾⣤⠟⠁⠹⣿⢆⠀⠀⠀⠀⠀⠀#{x}"
+    puts "#{c}      ⠀⢀⠼⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠈⣧⠀⠀⠀⠀⠀#{x}"
+    puts "#{c}      ⠀⡏⠀⠘⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀#{x}"
+    puts
     puts colorize(:blue, "╔══════════════════════════════════════════════════════════════╗")
-    puts colorize(:blue, "║     🚌 Ralph Wiggum Loop - \"I'm helping!\" 🚌               ║")
+    puts colorize(:blue, "║          Ralph Wiggum Loop - \"I'm helping!\"                 ║")
     puts colorize(:blue, "╚══════════════════════════════════════════════════════════════╝")
     puts
     puts "#{colorize(:yellow, 'Project:')}       #{@project_name}"
@@ -190,10 +213,7 @@ class RalphLoop
       # Reload PRD to get latest status
       unless reload_prd
         puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-        @check_delay.times do
-          break if @should_exit
-          sleep 1
-        end
+        interruptible_sleep(@check_delay)
         next
       end
 
@@ -201,10 +221,7 @@ class RalphLoop
       unless @prd["tasks"].is_a?(Array)
         error "prd.json missing 'tasks' array (skipping iteration)"
         puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-        @check_delay.times do
-          break if @should_exit
-          sleep 1
-        end
+        interruptible_sleep(@check_delay)
         next
       end
 
@@ -257,12 +274,7 @@ class RalphLoop
       end
 
       puts colorize(:cyan, "Next check in #{@check_delay}s... (Ctrl+C to stop)")
-
-      # Interruptible sleep
-      @check_delay.times do
-        break if @should_exit
-        sleep 1
-      end
+      interruptible_sleep(@check_delay)
     end
   end
 
@@ -317,9 +329,6 @@ class RalphLoop
 
     @running_pids[task_id] = pid
 
-    # Write PID file for tracking
-    File.write(File.join(@run_dir, "#{task_id}.pid"), pid.to_s)
-
     puts colorize(:cyan, "  PID: #{pid}")
     puts colorize(:cyan, "  Log: #{log_file}")
   end
@@ -361,17 +370,12 @@ class RalphLoop
 
   def process_finished_task(task_id, pid, exit_code)
     log_file = File.join(@run_dir, "#{task_id}.log")
-    task_completed = false
+    task_completed = exit_code == 0
 
-    # Check completion
-    if File.exist?(log_file) && File.read(log_file).include?("<promise>TASK_COMPLETE</promise>")
-      success "✓ Task #{task_id} signaled completion"
-      task_completed = true
-    elsif exit_code == 0
-      success "✓ Task #{task_id} finished (exit 0)"
-      task_completed = true
+    if task_completed
+      success "✓ Task #{task_id} completed (exit 0)"
     else
-      error "✗ Task #{task_id} exited with code #{exit_code}"
+      error "✗ Task #{task_id} failed (exit #{exit_code})"
     end
 
     # Mark task as passed if completed successfully
@@ -401,7 +405,6 @@ class RalphLoop
     # Clean up
     @running_pids.delete(task_id)
     FileUtils.rm_f(log_file)
-    FileUtils.rm_f(File.join(@run_dir, "#{task_id}.pid"))
   end
 
   def show_status
@@ -500,16 +503,24 @@ class RalphLoop
       FileUtils.rm_f(MASTER_PID_FILE)
     end
 
-    # Kill all claude -p processes
-    puts "  Killing all claude -p processes..."
-    system("pkill -TERM -f 'claude -p' 2>/dev/null")
+    # Kill all claude --print processes
+    puts "  Killing all claude --print processes..."
+    system("pkill -TERM -f 'claude --print' 2>/dev/null")
     sleep 1
-    system("pkill -9 -f 'claude -p' 2>/dev/null")
+    system("pkill -9 -f 'claude --print' 2>/dev/null")
 
     # Clean up leftover run dirs
     Dir.glob("/tmp/ralph-loop-*").each { |d| FileUtils.rm_rf(d) }
 
     puts "Done."
+  end
+
+  # Sleep that can be interrupted by signal handlers
+  def interruptible_sleep(seconds)
+    seconds.times do
+      break if @should_exit
+      sleep 1
+    end
   end
 
   # Color helpers
