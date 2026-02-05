@@ -215,9 +215,21 @@ class RalphLoop
     parts.join(" | ")
   end
 
-  def render_task_list
+  def render_task_list(max_display: 3)
+    # Collect tasks by status
+    running = tasks_by_status("running")
+    failed = tasks_by_status("failed")
+    pending = tasks_by_status("pending")
+
+    # Build display list: running first, then failed, then pending (up to max)
+    display_tasks = []
+    display_tasks.concat(running)
+    display_tasks.concat(failed)
+    display_tasks.concat(pending)
+    display_tasks = display_tasks.first(max_display)
+
     puts "Tasks:"
-    @prd["tasks"].each do |task|
+    display_tasks.each do |task|
       id = task["id"]
       title = task["title"] || "Untitled"
       status = task["status"] || "pending"
