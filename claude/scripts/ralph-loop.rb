@@ -257,7 +257,9 @@ class RalphLoop
         pid_str = ""
       end
 
-      puts "  #{id}  #{status_str}  #{title}#{pid_str}"
+      log_path = File.join(@run_dir, "#{id}.log")
+      id_display = hyperlink(log_path, id)
+      puts "  #{id_display}  #{status_str}  #{title}#{pid_str}"
     end
   end
 
@@ -402,7 +404,7 @@ class RalphLoop
 
     # Spawn claude via bash, reading prompt from file via stdin
     # pgroup: true gives the child its own process group (PGID = child PID)
-    cmd = "claude --print --dangerously-skip-permissions < #{prompt_file_path.shellescape}"
+    cmd = "claude --print --dangerously-skip-permissions --model sonnet < #{prompt_file_path.shellescape}"
     pid = Process.spawn(
       "/bin/bash", "-c", cmd,
       out: log_file,
@@ -460,9 +462,6 @@ class RalphLoop
     @running_pids.delete(task_id)
     @process_groups.delete(task_id)
 
-    # Remove log file
-    log_file = File.join(@run_dir, "#{task_id}.log")
-    FileUtils.rm_f(log_file)
   end
 
   def process_alive?(pid)
@@ -526,8 +525,6 @@ class RalphLoop
     # Clean up master PID file
     FileUtils.rm_f(MASTER_PID_FILE)
 
-    # Clean up run directory
-    FileUtils.rm_rf(@run_dir) if @run_dir && Dir.exist?(@run_dir)
   end
 
   def reset_running_tasks_to_pending
@@ -574,8 +571,6 @@ class RalphLoop
     sleep 1
     system("pkill -9 -f 'claude --print' 2>/dev/null")
 
-    # Clean up leftover run dirs
-    Dir.glob("/tmp/ralph-loop-*").each { |d| FileUtils.rm_rf(d) }
 
     puts "Done."
   end

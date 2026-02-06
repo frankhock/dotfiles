@@ -271,7 +271,7 @@ RSpec.describe RalphLoop do
       saved = JSON.parse(File.read(prd_path))
       expect(saved["tasks"][0]["status"]).to eq("completed")
       expect(r.instance_variable_get(:@running_pids)).not_to have_key("t1")
-      expect(File.exist?(log_file)).to be false
+      expect(File.exist?(log_file)).to be true
     ensure
       FileUtils.rm_rf(dir)
       FileUtils.rm_rf(run_dir)
@@ -402,7 +402,7 @@ RSpec.describe RalphLoop do
       # Reap the child so process_alive? returns false
       Process.wait(pid) rescue nil
       expect(r.send(:process_alive?, pid)).to be false
-      expect(Dir.exist?(run_dir)).to be false
+      expect(Dir.exist?(run_dir)).to be true
     ensure
       Process.kill("KILL", pid) rescue nil
       Process.wait(pid) rescue nil
@@ -414,7 +414,7 @@ RSpec.describe RalphLoop do
       r = build_ralph(run_dir: run_dir, running_pids: {}, process_groups: {})
 
       expect { r.send(:cleanup) }.not_to output(/Cleaning up/).to_stderr
-      expect(Dir.exist?(run_dir)).to be false
+      expect(Dir.exist?(run_dir)).to be true
     ensure
       FileUtils.rm_rf(run_dir) if Dir.exist?(run_dir)
     end
@@ -535,6 +535,15 @@ RSpec.describe RalphLoop do
 
       output = capture_stdout { r.send(:render_task_list) }
       expect(output).to include("...")
+    end
+
+    it "renders task IDs as OSC 8 hyperlinks to log files" do
+      tasks = [{ "id" => "T-001", "status" => "running", "title" => "Test task" }]
+      run_dir = "/tmp/ralph-loop-test"
+      r = build_ralph(prd: { "tasks" => tasks }, run_dir: run_dir, running_pids: { "T-001" => 123 })
+
+      output = capture_stdout { r.send(:render_task_list) }
+      expect(output).to include("\e]8;;file://#{run_dir}/T-001.log\e\\T-001\e]8;;\e\\")
     end
 
     it "respects max_display limit" do
