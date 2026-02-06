@@ -177,7 +177,19 @@ After structure approval, develop the full `ralph-tasks.json` content (reference
 
 Now that the tasks are finalized, draft `ralph-prompt.md` — the shared context every Claude instance receives.
 
-1. **Write the prompt using the ralph-prompt.md Format** (see reference section below). Leverage your full knowledge of the tasks to write targeted context.
+1. **Use the ralph-prompt.md Format** (see reference section below) as a rigid scaffold. Fill in the project-specific slots:
+
+   - **Context section**: Write 3-5 sentences of project context. Be minimal — only what a Claude instance needs to orient itself. Do NOT write lengthy overviews, current state descriptions, or desired end state narratives.
+   - **Project-Specific Instructions section**: This is the core. Include:
+     - The transformation or change pattern (with before/after examples if applicable)
+     - Edge case rules and gotchas
+     - Exact syntax or conventions to follow
+     - Any project-specific DO NOT rules beyond the generic ones
+   - **Step 3 (Make your changes)**: Replace the placeholder with project-specific instructions for what "making changes" means in this project.
+   - **Step 4 (Verify your changes)**: Replace with the exact verification commands for this project (e.g., `bundle exec rubocop`, `npm run typecheck`, `bin/rspec`).
+   - **Step 5 (Commit and EXIT)**: Fill in the commit message format and file staging guidance.
+
+   **Do NOT modify** the Scope Constraint section, the generic step framework, or the exit conditions. Those are fixed.
 
 2. **Present the complete `ralph-prompt.md` inline** for review:
    ```
@@ -185,8 +197,8 @@ Now that the tasks are finalized, draft `ralph-prompt.md` — the shared context
 
    [complete markdown]
 
-   This is the shared context every Claude instance receives (prepended with its assigned task ID).
-   Does this give each instance enough context to work autonomously?
+   This is the shared context every Claude instance receives (prepended with its assigned task JSON).
+   Is the scope tight enough? Are the project-specific instructions clear?
    ```
 
 3. **Get approval** before writing files. Iterate until the user is satisfied.
@@ -267,44 +279,79 @@ After both artifacts are approved:
 
 ## ralph-prompt.md Format
 
-This file provides shared context for all Claude instances. Each instance receives:
-1. `# YOUR ASSIGNED TASK ID: T-XXX` (injected by ralph-loop.rb)
-2. The contents of this file
+This file provides shared context for all Claude instances. Each instance receives (via stdin, constructed by ralph-loop.rb):
+1. `# YOUR ASSIGNED TASK` header followed by a fenced JSON block containing the task object (id, title, description, acceptanceCriteria, status)
+2. The full contents of this file
 
 Template:
 
-```markdown
+````markdown
 # [Feature Name] - Ralph Execution Context
 
-## Overview
+## SCOPE CONSTRAINT — READ THIS FIRST
 
-[Brief description of what we're implementing and why - 2-3 sentences]
+You have ONE job: complete YOUR assigned task. Nothing else.
 
-## Current State
+**Rules:**
+- ONLY do what your task's description and acceptance criteria ask for
+- Do NOT fix unrelated issues you encounter (lint errors, refactoring opportunities, style inconsistencies, etc.)
+- Do NOT explore or investigate beyond what is needed to complete your task
+- Do NOT modify files or code unrelated to your task
+- Do NOT continue working after committing — EXIT IMMEDIATELY with code 0
+- If you catch yourself wanting to do anything outside your task — STOP. That is out of scope.
 
-[What exists now, what's missing, key constraints discovered during planning]
+## Context
 
-### Key Files:
-- `path/to/file.ext` - [what it does]
-- `path/to/another.ext` - [what it does]
+[Brief project context — 3-5 sentences max. What the project is, what matters for understanding the tasks. Keep it minimal.]
 
-## Desired End State
+## Project-Specific Instructions
 
-[Specification of the desired end state after all tasks complete]
+[Instructions specific to this project. This is where create-ralph-plan inserts:
+- The transformation or change pattern to follow
+- Before/After code examples (if applicable)
+- Edge case rules and gotchas
+- Exact syntax or conventions to use
+- Verification commands specific to this project]
 
-## What We're NOT Doing
+## Step-by-Step Execution
 
-[Explicitly list out-of-scope items to prevent scope creep]
+Follow these steps IN ORDER. Do not skip or reorder.
 
-## Implementation Notes
+### Step 1: Read your assigned task
 
-[Patterns to follow, conventions to use, gotchas to avoid]
+Your task is injected at the TOP of this prompt as a JSON block under `# YOUR ASSIGNED TASK`. Read it. Note your task's description and acceptance criteria — that is your entire scope.
+
+### Step 2: Understand the relevant code
+
+Read the files relevant to your task. Understand what exists before making changes.
+
+### Step 3: Make your changes
+
+[Project-specific: what to do. E.g., "Apply the transformation described above" or "Implement the feature as described in your task"]
+
+### Step 4: Verify your changes
+
+[Project-specific verification commands. E.g.:]
+```bash
+[verification command 1]
+[verification command 2]
+```
+
+Must pass. If verification fails, fix the issue and re-verify.
+
+### Step 5: Commit and EXIT
+
+```bash
+git add [your changed files — list them explicitly, never use git add . or git add -A]
+git commit -m "[commit message format]"
+```
+
+**After committing, you are DONE. Exit with code 0. Do not continue working.**
 
 ## Your Task
 
-Your assigned task details (id, title, description, acceptance criteria) are injected at the top of this prompt as a JSON block. Complete that task. Exit normally (code 0) on success.
-If you cannot complete the task, explain why and exit with a non-zero code.
-```
+Your assigned task details (id, title, description, acceptance criteria) are injected at the top of this prompt as a JSON block. Complete that task following the steps above, then exit.
+````
 
 ---
 
