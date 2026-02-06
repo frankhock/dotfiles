@@ -23,7 +23,7 @@ When this command is invoked:
   STOP and wait for user input.
 
 - If argument provided:
-  - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+  - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
   - If folder doesn't exist, inform user and stop
   - Verify `spec.md` exists
   - If file is missing, inform user and stop
@@ -157,7 +157,7 @@ After structure approval, develop the full `ralph-tasks.json` content (reference
 2. **Add config fields**:
    - `maxParallel`: how many tasks can run concurrently (default 1)
    - `checkInterval`: seconds between status checks (default 15)
-   - `promptFile`: relative path to the prompt file (e.g., `"~/brain/thoughts/shared/[folder]/ralph-prompt.md"`)
+   - `promptFile`: relative path to the prompt file (e.g., `"$CLAUDE_PROJECTS_DIR/[folder]/ralph-prompt.md"`)
 
 3. **Present the complete `ralph-tasks.json` inline** for review:
    ```
@@ -208,14 +208,14 @@ Now that the tasks are finalized, draft `ralph-prompt.md` — the shared context
 After both artifacts are approved:
 
 1. **Write both files**:
-   - `~/brain/thoughts/shared/[folder]/ralph-tasks.json`
-   - `~/brain/thoughts/shared/[folder]/ralph-prompt.md`
+   - `$CLAUDE_PROJECTS_DIR/[folder]/ralph-tasks.json`
+   - `$CLAUDE_PROJECTS_DIR/[folder]/ralph-prompt.md`
 
 2. **Present file locations and iterate if needed**:
    ```
    Written:
-   - `~/brain/thoughts/shared/[folder]/ralph-tasks.json`
-   - `~/brain/thoughts/shared/[folder]/ralph-prompt.md`
+   - `$CLAUDE_PROJECTS_DIR/[folder]/ralph-tasks.json`
+   - `$CLAUDE_PROJECTS_DIR/[folder]/ralph-prompt.md`
 
    Any final changes before execution?
    ```
@@ -225,7 +225,7 @@ After both artifacts are approved:
    Ready to execute.
 
    cd to project root, then run:
-   ralph-loop.rb -p ~/brain/thoughts/shared/[folder]/ralph-tasks.json
+   ralph-loop.rb -p $CLAUDE_PROJECTS_DIR/[folder]/ralph-tasks.json
    ```
 
 ---
@@ -238,7 +238,7 @@ After both artifacts are approved:
   "description": "[Feature description]",
   "maxParallel": 1,
   "checkInterval": 15,
-  "promptFile": "~/brain/thoughts/shared/[folder]/ralph-prompt.md",
+  "promptFile": "$CLAUDE_PROJECTS_DIR/[folder]/ralph-prompt.md",
   "tasks": [
     {
       "id": "T-001",

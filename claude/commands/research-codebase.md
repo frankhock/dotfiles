@@ -22,14 +22,14 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/research-codebase 2025-01-27-ENG-1234-feature-name`):
-     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
      - If exists, read existing `research.md` for context
      - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `~/brain/thoughts/shared/`
+   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
    - If recent folders found with spec.md, show user options:
      ```
      Recent project folders:
@@ -142,8 +142,8 @@ Then wait for the user's research query.
    ```
    
    **If user provides ticket and feature name:**
-   - Create folder: `~/brain/thoughts/shared/YYYY-MM-DD-ENG-XXXX-feature-name/`
-   - Save to `~/brain/thoughts/shared/[folder]/research.md`
+   - Create folder: `$CLAUDE_PROJECTS_DIR/YYYY-MM-DD-ENG-XXXX-feature-name/`
+   - Save to `$CLAUDE_PROJECTS_DIR/[folder]/research.md`
    
    **If updating existing project folder:**
    - Append new findings with timestamp separator, or replace if user confirms

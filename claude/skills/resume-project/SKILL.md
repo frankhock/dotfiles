@@ -12,11 +12,11 @@ Load and display the current state of a project folder, then offer next steps.
 ### 1. Identify Project Folder
 
 **If full folder name provided** (e.g., `2025-01-27-ENG-1234-user-auth`):
-- Verify folder exists at `~/brain/thoughts/shared/[name]/`
+- Verify folder exists at `$CLAUDE_PROJECTS_DIR/[name]/`
 - Proceed to step 2
 
 **If partial match provided** (e.g., `ENG-1234`, `user-auth`, `1234`):
-- Search `~/brain/thoughts/shared/` for folders containing the partial match
+- Search `$CLAUDE_PROJECTS_DIR/` for folders containing the partial match
 - If exactly one match: use it
 - If multiple matches: list them and ask user to clarify
 - If no matches: inform user and suggest `/list-projects`

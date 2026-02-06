@@ -35,13 +35,13 @@ When this skill is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/workflows:brainstorm 2025-01-30-ENG-123-feature`):
-     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
      - Read `spec.md` if exists (for resuming)
      - Inform user: "Resuming spec for project [folder-name]."
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `~/brain/thoughts/shared/`
+   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
    - Use **AskUserQuestion tool** to show options:
      - [folder-1] (spec: yes - resume)
      - [folder-2] (spec: no - add spec)
@@ -124,7 +124,7 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 **Save location:**
 
 1. **If working with a project folder** (from Initial Setup):
-   - Save to `~/brain/thoughts/shared/[folder]/spec.md`
+   - Save to `$CLAUDE_PROJECTS_DIR/[folder]/spec.md`
 
 2. **If no project folder**, use **AskUserQuestion tool** to ask:
    - Create new folder (provide ticket + feature name)
@@ -133,7 +133,7 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 **If creating new project folder:**
 - Folder format: `YYYY-MM-DD-[ticket]-[feature-name]` (e.g., `2025-01-31-ENG-123-user-auth`)
-- Create: `~/brain/thoughts/shared/[folder]/`
+- Create: `$CLAUDE_PROJECTS_DIR/[folder]/`
 - Save to: `[folder]/spec.md`
 
 **spec.md format:**
@@ -177,7 +177,7 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 ```
 
 **Git commits:**
-- Project folder saves (`~/brain/`): No commit (outside project repo)
+- Project folder saves (`$CLAUDE_PROJECTS_DIR`): No commit (outside project repo)
 
 **After saving, use AskUserQuestion tool to present next steps:**
 - Proceed to research: `/research-codebase [folder-name]`

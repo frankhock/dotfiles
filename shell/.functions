@@ -2,7 +2,7 @@
 
 # Ralph Wiggum Loop - parallel Claude task runner
 ralph() {
-  local project_dir="$HOME/brain/thoughts/shared"
+  local project_dir="$CLAUDE_PROJECTS_DIR"
   local tasks_file="ralph-tasks.json"
   local prompt_file="ralph-prompt.md"
   local args=("$@")
@@ -47,7 +47,7 @@ ralph() {
 
 # List projects for quick selection and clipboard copy
 lsp() {
-  local project_dir="$HOME/brain/thoughts/shared"
+  local project_dir="$CLAUDE_PROJECTS_DIR"
   local selection
 
   selection=$(ls -1 "$project_dir" | grep -v '^\.' | sort -r | fzf --height=40% --reverse)

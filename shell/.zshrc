@@ -35,5 +35,8 @@ eval "$(starship init zsh)"
 # Zoxide
 eval "$(zoxide init --cmd cd zsh)"
 
+# Claude project artifacts directory
+export CLAUDE_PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/brain/dev/projects}"
+
 # Load user-installed binaries
 export PATH="$HOME/.local/bin:$PATH"

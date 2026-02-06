@@ -1,10 +1,10 @@
 ---
-description: Implement technical plans from ~/brain/thoughts/shared/plans with verification
+description: Implement technical plans from $CLAUDE_PROJECTS_DIR/plans with verification
 ---
 
 # Implement Plan
 
-You are tasked with implementing an approved technical plan from `~/brain/thoughts/shared/plans/`. These plans contain phases with specific changes and success criteria.
+You are tasked with implementing an approved technical plan from `$CLAUDE_PROJECTS_DIR/plans/`. These plans contain phases with specific changes and success criteria.
 
 ## Getting Started
 
@@ -12,7 +12,7 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
      - Read `research.md` for context (understand codebase findings)
      - Read `plan.md` for implementation instructions
      - Proceed with implementation

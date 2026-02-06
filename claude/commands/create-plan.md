@@ -21,7 +21,7 @@ When this command is invoked:
     STOP and wait for user input.
   
   - If argument provided:
-    - Verify folder exists at `~/brain/thoughts/shared/[argument]/`
+    - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
     - If folder doesn't exist, inform user and stop
     - Verify `spec.md` exists
     - If file is missing, inform user and stop
@@ -152,7 +152,7 @@ Once aligned on approach:
 After structure approval:
 
 1. **Determine save location:**
-   - save to `~/brain/thoughts/shared/[folder]/plan.md`
+   - save to `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
    
    **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
    - YYYY-MM-DD is today's date
@@ -258,7 +258,7 @@ After structure approval:
 ## References
 
 - Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
-- Related research: `~/brain/thoughts/shared/research/[relevant].md`
+- Related research: `$CLAUDE_PROJECTS_DIR/research/[relevant].md`
 - Similar implementation: `[file:line]`
 
 ## Next Steps
@@ -271,7 +271,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `~/brain/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `$CLAUDE_PROJECTS_DIR/plans/YYYY-MM-DD-ENG-XXXX-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
