@@ -1,5 +1,4 @@
 ---
-name: brainstorm
 description: "Interactive thought partner for exploring ideas and clarifying requirements. Use before implementation to understand what you're building and why."
 ---
 
