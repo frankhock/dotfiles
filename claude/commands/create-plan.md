@@ -130,7 +130,29 @@ After getting initial clarifications:
 
 Once aligned on approach:
 
-1. **Create initial plan outline**:
+1. **Recommend a plan tier**:
+   Based on what you learned in Steps 1-2, recommend one of three tiers:
+
+   **Signals to consider:**
+   - Number of files affected
+   - Number of systems/components touched
+   - Presence of migrations, API changes, or schema changes
+   - Whether the task follows an existing pattern or introduces something new
+
+   **Tier definitions:**
+   - **Focused** — Single-component changes, bug fixes, tasks following established patterns. 1-3 files, one system.
+   - **Standard** — Most features, cross-component work, moderate complexity. Multiple files, 2+ systems.
+   - **Comprehensive** — Architectural changes, new systems, high-risk or high-uncertainty work. Many files, multiple systems, migrations.
+
+   Use **AskUserQuestion** to present your recommendation:
+   - Option 1: Your recommended tier with "(Recommended)" label and one-sentence reasoning
+   - Option 2-3: The other two tiers
+
+   **If the user overrides your recommendation**, briefly note the tradeoff:
+   - Upgrading (e.g., Focused → Comprehensive): "This will produce a more detailed plan with risk analysis and rollback strategy. The extra detail adds planning time but reduces implementation risk."
+   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/iterate-plan` to expand it."
+
+2. **Create initial plan outline**:
    ```
    Here's my proposed plan structure:
 
@@ -145,7 +167,7 @@ Once aligned on approach:
    Does this phasing make sense? Should I adjust the order or granularity?
    ```
 
-2. **Get feedback on structure** before writing details
+3. **Get feedback on structure** before writing details
 
 ### Step 4: Detailed Plan Writing
 
@@ -163,10 +185,52 @@ After structure approval:
    - With ticket: `2025-01-08-ENG-1478-parent-child-tracking/plan.md`
    - Without ticket: `2025-01-08-improve-error-handling/plan.md`
 
-2. **Use this template structure**:
+2. **Use the template for the selected tier:**
+
+   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/implement-plan`) to see which tier was used.
+
+   **If tier is Focused:**
 
 ````markdown
 # [Feature/Task Name] Implementation Plan
+
+**Tier:** Focused
+
+## Overview
+
+[2-3 sentence description of what we're implementing and why]
+
+## What We're NOT Doing
+
+[Explicitly list out-of-scope items to prevent scope creep]
+
+## Changes Required:
+
+#### 1. [Component/File Group]
+**File**: `path/to/file.ext`
+**Changes**: [Summary of changes]
+
+```[language]
+// Specific code to add/modify
+```
+
+## Success Criteria:
+
+#### Automated Verification:
+- [ ] [Relevant checks for this task]
+
+#### Manual Verification:
+- [ ] [Relevant manual checks]
+
+**Implementation Note**: After automated verification passes, pause for manual confirmation before considering this complete.
+````
+
+   **If tier is Standard** (current default):
+
+````markdown
+# [Feature/Task Name] Implementation Plan
+
+**Tier:** Standard
 
 ## Overview
 
@@ -266,6 +330,37 @@ After structure approval:
 - [ ] Implement plan: `/implement-plan [folder-name]`
 ````
 
+   **If tier is Comprehensive** (Standard template plus these additional sections):
+
+   Use the full Standard template above, then add these sections after "Migration Notes" and before "References":
+
+````markdown
+## Alternative Approaches Considered
+
+### [Approach A]
+- **Description**: [What this approach would look like]
+- **Why rejected**: [Specific reason]
+
+### [Approach B]
+- **Description**: [What this approach would look like]
+- **Why rejected**: [Specific reason]
+
+## Risk Analysis
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| [Risk 1] | [Low/Med/High] | [Low/Med/High] | [Strategy] |
+| [Risk 2] | [Low/Med/High] | [Low/Med/High] | [Strategy] |
+
+## Rollback Strategy
+
+[How to safely revert these changes if something goes wrong. Include specific steps.]
+
+## Performance Considerations
+
+[Required — not optional for Comprehensive tier. Include benchmarks, expected impact, and monitoring approach.]
+````
+
 ### Step 5: Sync and Review
 
 1. **Present the draft plan location**:
@@ -287,6 +382,20 @@ After structure approval:
    - Add/remove scope items
 
 3. **Continue refining** until the user is satisfied
+
+4. **Once the user is satisfied with the plan**, present next steps using **AskUserQuestion**:
+
+   Options to present:
+   - **Iterate on plan** — "Refine specific sections: `/iterate-plan [folder]`"
+   - **Implement plan** — "Start building: `/implement-plan [folder]`"
+   - **Create Ralph tasks** — "Set up autonomous execution: `/create-ralph-plan [folder]`"
+   - **Done for now** — "Save and exit. Come back later with `/resume-project [folder]`"
+
+   If the plan tier is **Focused**, adjust the "Create Ralph tasks" option description to note: "Better suited for Standard/Comprehensive plans"
+
+   If the user selects "Iterate on plan", after iteration is complete, re-present this menu.
+   If the user selects "Done for now", confirm the plan location and exit.
+   For all other options, output the command string for the user to run in a fresh context.
 
 ## Important Guidelines
 

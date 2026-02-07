@@ -63,7 +63,42 @@ Then wait for the user's research query.
    - Create a research plan using TodoWrite to track all subtasks
    - Consider which directories, files, or architectural patterns are relevant
 
-3. **Spawn parallel sub-agent tasks for comprehensive research:**
+3. **Classify research depth based on topic risk:**
+
+   After decomposing the research question, classify the topic into one of three risk categories:
+
+   **High-risk keywords** (always do external research):
+   - Security, authentication, authorization
+   - Payments, billing, subscriptions
+   - Cryptography, encryption, hashing
+   - External API integrations (third-party services)
+   - Data privacy, GDPR, PII handling
+   - Infrastructure changes (DNS, CDN, load balancing)
+   - OAuth, SSO, SAML
+
+   **Standard keywords** (local research sufficient):
+   - Feature additions following existing patterns
+   - UI/frontend changes
+   - Refactoring, code reorganization
+   - Bug fixes in well-understood code
+   - Internal API changes
+
+   **Low-risk keywords** (lightweight research):
+   - Copy/text changes
+   - Config tweaks
+   - Simple additions to existing CRUD
+   - Documentation updates
+
+   **Announce the classification:**
+   ```
+   Research depth: [High/Standard/Low]
+   Reason: [one sentence explaining why]
+   [Proceeding with/Skipping] external research.
+   ```
+
+   The user can override by saying "go deeper" or "that's enough."
+
+4. **Spawn parallel sub-agent tasks for comprehensive research:**
    - Create multiple Task agents to research different aspects concurrently
    - Use specialized agents for specific research tasks:
 
@@ -74,9 +109,14 @@ Then wait for the user's research query.
 
    **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
 
-   **For web research (only if user explicitly asks):**
-   - Use the **web-search-researcher** agent for external documentation and resources
-   - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
+   **For web research (automatic for high-risk topics, or if user asks):**
+   - If research depth is **High**: automatically spawn **web-search-researcher** agents for:
+     - Current best practices and known pitfalls for the specific topic
+     - Framework/library documentation for the specific integration
+     - Recent security advisories or breaking changes (if applicable)
+   - If research depth is **Standard** or **Low**: skip unless user explicitly asks
+   - Instruct web-research agents to return source URLs with their findings
+   - INCLUDE those URLs in the final research.md under a "## External Sources" section
 
    **For Linear tickets (if relevant):**
    - Use the **linear-ticket-reader** agent to get full details of a specific ticket
@@ -90,7 +130,7 @@ Then wait for the user's research query.
    - Don't write detailed prompts about HOW to search - the agents already know
    - Remind agents they are documenting, not evaluating or improving
 
-4. **Wait for all sub-agents to complete and synthesize findings:**
+5. **Wait for all sub-agents to complete and synthesize findings:**
    - IMPORTANT: Wait for ALL sub-agent tasks to complete before proceeding
    - Compile all sub-agent results
    - Connect findings across different components
@@ -98,7 +138,7 @@ Then wait for the user's research query.
    - Highlight patterns, connections, and architectural decisions
    - Answer the user's specific questions with concrete evidence
 
-5. **Present findings to the user:**
+6. **Present findings to the user:**
    - Structure your response clearly:
 
    ```markdown
@@ -128,7 +168,7 @@ Then wait for the user's research query.
    [Any areas that need further investigation]
    ```
 
-6. **Offer to save research to project folder:**
+7. **Offer to save research to project folder:**
    
    After presenting findings, ask:
    ```
@@ -164,11 +204,16 @@ Then wait for the user's research query.
    ## Code References
    [File paths and line numbers]
 
+   ## External Sources
+   [Only if web research was performed]
+   - [Source title](URL) - [What was learned]
+   - [Source title](URL) - [What was learned]
+
    ## Next Steps
    - [ ] Create implementation plan: `/create-plan [folder-name]`
    ```
 
-7. **Handle follow-up questions:**
+8. **Handle follow-up questions:**
    - If the user has follow-up questions, spawn new sub-agents as needed
    - Build on previous findings rather than starting from scratch
 
