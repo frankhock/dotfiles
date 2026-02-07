@@ -79,7 +79,7 @@ When this command is invoked:
    - [Design preference that affects implementation]
    ```
 
-   Only ask questions that you genuinely cannot answer through code investigation.
+   Only ask questions that you genuinely cannot answer through code investigation. Use **AskUserQuestion tool** to present each open question one at a time, with multiple-choice options where natural alternatives exist.
 
 ### Step 2: Research & Discovery
 
@@ -123,6 +123,8 @@ After getting initial clarifications:
    Which approach aligns best with your vision?
    ```
 
+   Use **AskUserQuestion tool** to present design options as choices, leading with your recommendation.
+
 ### Step 3: Task Structure
 
 Once aligned on approach, present a JSON task skeleton for approval. This is just the shape — ids, titles, one-line descriptions in execution order.
@@ -145,7 +147,7 @@ Once aligned on approach, present a JSON task skeleton for approval. This is jus
    - Is the granularity right (each task = one Claude context window)?
    ```
 
-2. **Get approval on structure** before investing in details. Iterate until the breakdown is right.
+2. Use **AskUserQuestion tool** to **get approval on structure** before investing in details. Iterate until the breakdown is right.
 
 ### Step 4: Flesh Out Tasks
 
@@ -173,7 +175,7 @@ After structure approval, develop the full `ralph-tasks.json` content (reference
    - Is execution order still correct?
    ```
 
-4. **Get approval** before proceeding. Iterate until the user is satisfied.
+4. Use **AskUserQuestion tool** to **get approval** before proceeding. Iterate until the user is satisfied.
 
 ### Step 5: Draft Execution Prompt
 
@@ -203,7 +205,7 @@ Now that the tasks are finalized, draft `ralph-prompt.md` — the shared context
    Is the scope tight enough? Are the project-specific instructions clear?
    ```
 
-3. **Get approval** before writing files. Iterate until the user is satisfied.
+3. Use **AskUserQuestion tool** to **get approval** before writing files. Iterate until the user is satisfied.
 
 ### Step 6: Write Files & Handoff
 
@@ -221,6 +223,8 @@ After both artifacts are approved:
 
    Any final changes before execution?
    ```
+
+   Use **AskUserQuestion tool** to confirm no final changes are needed.
 
 3. **Present next steps using AskUserQuestion tool**:
    - Execute now: `ralph [folder-name]` (from project root)

@@ -106,7 +106,7 @@ I plan to update the plan by:
 Does this align with your intent?
 ```
 
-Get user confirmation before proceeding.
+Use **AskUserQuestion tool** to get user confirmation before proceeding.
 
 ### Step 4: Update the Plan
 
@@ -146,7 +146,7 @@ Get user confirmation before proceeding.
    Would you like any further adjustments?
    ```
 
-2. **Be ready to iterate further** based on feedback
+2. Use **AskUserQuestion tool** to ask if further adjustments are needed. **Be ready to iterate further** based on feedback.
 
 3. **Once the user is satisfied**, present next steps using **AskUserQuestion tool**:
    - Implement plan: `/workflows:implement [folder-name]`

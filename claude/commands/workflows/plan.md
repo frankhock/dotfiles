@@ -79,7 +79,7 @@ When this command is invoked:
    - [Design preference that affects implementation]
    ```
 
-   Only ask questions that you genuinely cannot answer through code investigation.
+   Only ask questions that you genuinely cannot answer through code investigation. Use **AskUserQuestion tool** to present each open question one at a time, with multiple-choice options where natural alternatives exist.
 
 ### Step 2: Research & Discovery
 
@@ -130,6 +130,8 @@ After getting initial clarifications:
    Which approach aligns best with your vision?
    ```
 
+   Use **AskUserQuestion tool** to present design options as choices, leading with your recommendation.
+
 ### Step 3: Plan Structure Development
 
 Once aligned on approach:
@@ -171,7 +173,7 @@ Once aligned on approach:
    Does this phasing make sense? Should I adjust the order or granularity?
    ```
 
-3. **Get feedback on structure** before writing details
+3. Use **AskUserQuestion tool** to **get feedback on structure** before writing details
 
 ### Step 4: Detailed Plan Writing
 
@@ -378,6 +380,8 @@ After structure approval:
    - Any technical details that need adjustment?
    - Missing edge cases or considerations?
    ```
+
+   Use **AskUserQuestion tool** to collect review feedback.
 
 2. **Iterate based on feedback** - be ready to:
    - Add missing phases

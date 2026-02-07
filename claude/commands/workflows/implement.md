@@ -59,6 +59,8 @@ If you encounter a mismatch:
   How should I proceed?
   ```
 
+  Use **AskUserQuestion tool** to ask how to proceed, with options relevant to the mismatch.
+
 ## Verification Approach
 
 After implementing a phase:
@@ -78,6 +80,8 @@ After implementing a phase:
 
   Let me know when manual testing is complete so I can proceed to Phase [N+1].
   ```
+
+  Use **AskUserQuestion tool** to collect manual verification results before proceeding to the next phase.
 
 If instructed to execute multiple phases consecutively, skip the pause until the last phase. Otherwise, assume you are just doing one phase.
 
