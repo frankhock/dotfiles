@@ -1,33 +1,35 @@
 ---
-name: create-ralph-plan
+name: workflows:plan-ralph
 description: "Create implementation plans for Ralph autonomous execution. Interactive planning with research agents, then outputs ralph-tasks.json."
+argument-hint: "[project-folder]"
 model: opus
-user-invocable: true
 ---
 
 # Create Ralph Plan
 
 Create detailed implementation plans through interactive research, then output task definitions for Ralph autonomous execution.
 
-## Initial Response
+## Initial Setup
 
 When this command is invoked:
 
-**Require project folder argument**
-- If no argument provided, respond with:
-  ```
-  /create-ralph-plan [project-folder]
+1. **Check for project folder argument**
+   - If argument provided (e.g., `/workflows:plan-ralph 2025-01-27-ENG-1234-feature`):
+     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - If folder doesn't exist, inform user and stop
+     - Verify `spec.md` exists
+     - If file is missing, inform user and stop
+     - Inform user: "Using project folder [name]. Spec/Research artifacts found."
+   - If no argument, proceed to step 2
 
-  Please provide a project folder name (e.g., `2025-01-27-ENG-1234-feature`).
-  ```
-  STOP and wait for user input.
+2. **Auto-detect recent project folders** (if no argument):
+   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Use **AskUserQuestion tool** to show options:
+     - [folder-1] (spec: yes/no, research: yes/no)
+     - [folder-2] (spec: yes/no, research: yes/no)
+     - Provide folder name manually
 
-- If argument provided:
-  - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
-  - If folder doesn't exist, inform user and stop
-  - Verify `spec.md` exists
-  - If file is missing, inform user and stop
-  - Inform user: "Using project folder [name]. Spec/Research artifacts found."
+3. **If no folders found or user provides folder name**: Verify folder exists and has `spec.md`, then proceed.
 
 ## Process Steps
 
@@ -220,13 +222,10 @@ After both artifacts are approved:
    Any final changes before execution?
    ```
 
-3. **End with handoff**:
-   ```
-   Ready to execute.
-
-   cd to project root, then run:
-   ralph-loop.rb -p $CLAUDE_PROJECTS_DIR/[folder]/ralph-tasks.json
-   ```
+3. **Present next steps using AskUserQuestion tool**:
+   - Execute now: `ralph [folder-name]` (from project root)
+   - Review files first
+   - Done for now — resume later with `/resume-project [folder-name]`
 
 ---
 
@@ -397,7 +396,7 @@ Your assigned task details (id, title, description, acceptance criteria) are inj
 ## Example Interaction Flow
 
 ```
-User: /create-ralph-plan 2025-01-27-ENG-1478-task-status
+User: /workflows:plan-ralph 2025-01-27-ENG-1478-task-status
 Assistant: Using project folder 2025-01-27-ENG-1478-task-status. Spec/Research artifacts found.
 
 Let me read the spec and research files completely...

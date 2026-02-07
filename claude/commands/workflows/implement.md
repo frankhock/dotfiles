@@ -1,12 +1,14 @@
 ---
-description: Implement technical plans from $CLAUDE_PROJECTS_DIR/plans with verification
+name: workflows:implement
+description: "Implement technical plans from $CLAUDE_PROJECTS_DIR with verification"
+argument-hint: "[project-folder]"
 ---
 
 # Implement Plan
 
-You are tasked with implementing an approved technical plan from `$CLAUDE_PROJECTS_DIR/plans/`. These plans contain phases with specific changes and success criteria.
+You are tasked with implementing an approved technical plan from `$CLAUDE_PROJECTS_DIR/`. These plans contain phases with specific changes and success criteria.
 
-## Getting Started
+## Initial Setup
 
 When this command is invoked:
 
@@ -16,23 +18,16 @@ When this command is invoked:
      - Read `research.md` for context (understand codebase findings)
      - Read `plan.md` for implementation instructions
      - Proceed with implementation
-   - If argument is a direct plan path (legacy):
-     - Read the plan at that path
-   - If no argument, proceed to auto-detection
+   - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan.md from last 30 days
-   - If folders found, ask:
-     ```
-     I found project folders ready for implementation:
-     
-     1. [folder-name-1] (Research: ✓, Plan: ✓)
-     2. [folder-name-2] (Research: ✓, Plan: ✓)
-     
-     Which project would you like to implement? Or provide a plan path:
-     ```
+   - Find project folders with plan.md from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Use **AskUserQuestion tool** to show options:
+     - [folder-1] (Research: yes/no, Plan: yes/no)
+     - [folder-2] (Research: yes/no, Plan: yes/no)
+     - Provide folder name manually
 
-3. **If no project folder selected**, ask for plan path.
+3. **If no project folder selected**, use **AskUserQuestion tool** to ask for a plan path.
 
 4. **Load full context:**
    - Read the plan completely and check for any existing checkmarks (- [x])
@@ -86,8 +81,14 @@ After implementing a phase:
 
 If instructed to execute multiple phases consecutively, skip the pause until the last phase. Otherwise, assume you are just doing one phase.
 
-do not check off items in the manual testing steps until confirmed by the user.
+Do not check off items in the manual testing steps until confirmed by the user.
 
+## After Implementation Complete
+
+Once all phases are implemented and verified, present next steps using **AskUserQuestion tool**:
+- Create PR: `/pr-create`
+- Iterate on plan: `/workflows:iterate [folder-name]`
+- Done for now — resume later with `/resume-project [folder-name]`
 
 ## If You Get Stuck
 

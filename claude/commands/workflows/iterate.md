@@ -1,5 +1,7 @@
 ---
-description: Iterate on existing implementation plans with thorough research and updates
+name: workflows:iterate
+description: "Iterate on existing implementation plans with thorough research and updates"
+argument-hint: "[project-folder] [feedback]"
 model: opus
 ---
 
@@ -7,7 +9,7 @@ model: opus
 
 You are tasked with updating existing implementation plans based on user feedback. You should be skeptical, thorough, and ensure changes are grounded in actual codebase reality.
 
-## Initial Response
+## Initial Setup
 
 When this command is invoked:
 
@@ -18,40 +20,27 @@ When this command is invoked:
      - Proceed with iteration
    - If argument is a direct plan path (legacy):
      - Read the plan at that path
-   - If no argument, proceed to auto-detection
+   - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan.md from last 30 days
-   - If folders found, ask:
-     ```
-     I found project folders with existing plans:
-     
-     1. [folder-name-1]
-     2. [folder-name-2]
-     
-     Which plan would you like to iterate on? Or provide a plan path:
-     ```
+   - Find project folders with plan.md from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Use **AskUserQuestion tool** to show options:
+     - [folder-1] (plan: yes)
+     - [folder-2] (plan: yes)
+     - Provide folder or plan path manually
 
 3. **Handle different input scenarios**:
 
    **If NO plan file provided and no auto-detection matches**:
-   ```
-   I'll help you iterate on an existing implementation plan.
-
-   Which plan would you like to update? Please provide the path to the plan file (e.g., `$CLAUDE_PROJECTS_DIR/plans/2025-10-16-feature.md`).
-   ```
-   Wait for user input, then re-check for feedback.
+   Use **AskUserQuestion tool** to ask which plan to update, with options for recently modified plan files if any are found.
 
    **If plan file provided but NO feedback**:
-   ```
-   I've found the plan at [path]. What changes would you like to make?
+   Use **AskUserQuestion tool** to ask what changes the user would like to make, with common options:
+   - Add a new phase
+   - Update success criteria
+   - Adjust scope
+   - Split/merge phases
 
-   For example:
-   - "Add a phase for migration handling"
-   - "Update the success criteria to include performance tests"
-   - "Adjust the scope to exclude feature X"
-   - "Split Phase 2 into two separate phases"
-   ```
    Wait for user input.
 
    **If BOTH plan file AND feedback provided**:
@@ -142,12 +131,9 @@ Get user confirmation before proceeding.
 
 ### Step 5: Sync and Review
 
-1. **Sync the updated plan**:
-   - This ensures changes are properly indexed
-
-2. **Present the changes made**:
+1. **Present the changes made**:
    ```
-   I've updated the plan at `$CLAUDE_PROJECTS_DIR/plans/[filename].md`
+   I've updated the plan at `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
 
    Changes made:
    - [Specific change 1]
@@ -160,7 +146,13 @@ Get user confirmation before proceeding.
    Would you like any further adjustments?
    ```
 
-3. **Be ready to iterate further** based on feedback
+2. **Be ready to iterate further** based on feedback
+
+3. **Once the user is satisfied**, present next steps using **AskUserQuestion tool**:
+   - Implement plan: `/workflows:implement [folder-name]`
+   - Iterate more (continue refining)
+   - Create Ralph tasks: `/workflows:plan-ralph [folder-name]`
+   - Done for now — resume later with `/resume-project [folder-name]`
 
 ## Important Guidelines
 
@@ -230,29 +222,3 @@ When spawning research sub-tasks:
 5. **Request specific file:line references** in responses
 6. **Wait for all tasks to complete** before synthesizing
 7. **Verify sub-task results** - if something seems off, spawn follow-up tasks
-
-## Example Interaction Flows
-
-**Scenario 1: User provides everything upfront**
-```
-User: /iterate_plan $CLAUDE_PROJECTS_DIR/plans/2025-10-16-feature.md - add phase for error handling
-Assistant: [Reads plan, researches error handling patterns, updates plan]
-```
-
-**Scenario 2: User provides just plan file**
-```
-User: /iterate_plan $CLAUDE_PROJECTS_DIR/plans/2025-10-16-feature.md
-Assistant: I've found the plan. What changes would you like to make?
-User: Split Phase 2 into two phases - one for backend, one for frontend
-Assistant: [Proceeds with update]
-```
-
-**Scenario 3: User provides no arguments**
-```
-User: /iterate_plan
-Assistant: Which plan would you like to update? Please provide the path...
-User: $CLAUDE_PROJECTS_DIR/plans/2025-10-16-feature.md
-Assistant: I've found the plan. What changes would you like to make?
-User: Add more specific success criteria
-Assistant: [Proceeds with update]
-```

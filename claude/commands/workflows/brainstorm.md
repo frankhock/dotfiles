@@ -27,7 +27,7 @@ Start by understanding the current project context, then ask questions one at a 
 - Make low-level technical decisions (framework choices, data structures, etc.)
 - Cover error handling, testing strategies, or data flow
 
-Those belong in `/create-plan` after codebase research.
+Those belong in `/workflows:plan` after codebase research.
 
 ## Initial Setup
 
@@ -173,20 +173,20 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 [Things we need to validate during codebase research]
 
 ## Next Steps
-- [ ] Research codebase: `/research-codebase [folder-name]`
+- [ ] Research codebase: `/workflows:research [folder-name]`
 ```
 
 **Git commits:**
 - Project folder saves (`$CLAUDE_PROJECTS_DIR`): No commit (outside project repo)
 
 **After saving, use AskUserQuestion tool to present next steps:**
-- Proceed to research: `/research-codebase [folder-name]`
+- Proceed to research: `/workflows:research [folder-name]`
 - Refine spec further
 - Done for now
 
 ## Context Integration
 
-**Handoff:** After spec approval, next step is `/research-codebase [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
+**Handoff:** After spec approval, next step is `/workflows:research [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
 
 ## Key Principles
 

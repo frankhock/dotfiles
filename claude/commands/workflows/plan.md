@@ -1,5 +1,7 @@
 ---
-description: Create detailed implementation plans through interactive research and iteration
+name: workflows:plan
+description: "Create detailed implementation plans through interactive research and iteration"
+argument-hint: "[project-folder]"
 model: opus
 ---
 
@@ -7,25 +9,27 @@ model: opus
 
 You are tasked with creating detailed implementation plans through an interactive, iterative process. You should be skeptical, thorough, and work collaboratively with the user to produce high-quality technical specifications.
 
-## Initial Response
+## Initial Setup
 
 When this command is invoked:
 
-**Require project folder argument**
-  - If no argument provided, respond with:
-    ```
-    /create-plan [project-folder]
-      
-    Please provide a project folder name (e.g., `2025-01-27-ENG-1234-feature`).
-    ```
-    STOP and wait for user input.
-  
-  - If argument provided:
-    - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
-    - If folder doesn't exist, inform user and stop
-    - Verify `spec.md` exists
-    - If file is missing, inform user and stop
-    - Inform user: "Using project folder [name]. Spec/Research artifacts found."
+1. **Check for project folder argument**
+   - If argument provided (e.g., `/workflows:plan 2025-01-27-ENG-1234-feature`):
+     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - If folder doesn't exist, inform user and stop
+     - Verify `spec.md` exists
+     - If file is missing, inform user and stop
+     - Inform user: "Using project folder [name]. Spec/Research artifacts found."
+   - If no argument, proceed to step 2
+
+2. **Auto-detect recent project folders** (if no argument):
+   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Use **AskUserQuestion tool** to show options:
+     - [folder-1] (spec: yes/no, research: yes/no, plan: yes/no)
+     - [folder-2] (spec: yes/no, research: yes/no, plan: yes/no)
+     - Provide folder name manually
+
+3. **If no folders found or user provides folder name**: Verify folder exists and has `spec.md`, then proceed.
 
 ## Process Steps
 
@@ -150,7 +154,7 @@ Once aligned on approach:
 
    **If the user overrides your recommendation**, briefly note the tradeoff:
    - Upgrading (e.g., Focused → Comprehensive): "This will produce a more detailed plan with risk analysis and rollback strategy. The extra detail adds planning time but reduces implementation risk."
-   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/iterate-plan` to expand it."
+   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/workflows:iterate` to expand it."
 
 2. **Create initial plan outline**:
    ```
@@ -175,19 +179,19 @@ After structure approval:
 
 1. **Determine save location:**
    - save to `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
-   
+
    **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
    - YYYY-MM-DD is today's date
    - ENG-XXXX is the ticket number (omit if no ticket)
    - description is a brief kebab-case description
-   
+
    Examples:
    - With ticket: `2025-01-08-ENG-1478-parent-child-tracking/plan.md`
    - Without ticket: `2025-01-08-improve-error-handling/plan.md`
 
 2. **Use the template for the selected tier:**
 
-   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/implement-plan`) to see which tier was used.
+   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/workflows:implement`) to see which tier was used.
 
    **If tier is Focused:**
 
@@ -327,7 +331,7 @@ After structure approval:
 
 ## Next Steps
 
-- [ ] Implement plan: `/implement-plan [folder-name]`
+- [ ] Implement plan: `/workflows:implement [folder-name]`
 ````
 
    **If tier is Comprehensive** (Standard template plus these additional sections):
@@ -366,7 +370,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `$CLAUDE_PROJECTS_DIR/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
@@ -383,12 +387,12 @@ After structure approval:
 
 3. **Continue refining** until the user is satisfied
 
-4. **Once the user is satisfied with the plan**, present next steps using **AskUserQuestion**:
+4. **Once the user is satisfied with the plan**, present next steps using **AskUserQuestion tool**:
 
    Options to present:
-   - **Iterate on plan** — "Refine specific sections: `/iterate-plan [folder]`"
-   - **Implement plan** — "Start building: `/implement-plan [folder]`"
-   - **Create Ralph tasks** — "Set up autonomous execution: `/create-ralph-plan [folder]`"
+   - **Iterate on plan** — "Refine specific sections: `/workflows:iterate [folder]`"
+   - **Implement plan** — "Start building: `/workflows:implement [folder]`"
+   - **Create Ralph tasks** — "Set up autonomous execution: `/workflows:plan-ralph [folder]`"
    - **Done for now** — "Save and exit. Come back later with `/resume-project [folder]`"
 
    If the plan tier is **Focused**, adjust the "Create Ralph tasks" option description to note: "Better suited for Standard/Comprehensive plans"
@@ -524,7 +528,7 @@ tasks = [
 ## Example Interaction Flow
 
 ```
-User: /create-plan 2025-01-27-ENG-1478-parent-child-tracking
+User: /workflows:plan 2025-01-27-ENG-1478-parent-child-tracking
 Assistant: Using project folder 2025-01-27-ENG-1478-parent-child-tracking. Spec/Research artifacts found.
 
 Let me read the spec and research files completely...

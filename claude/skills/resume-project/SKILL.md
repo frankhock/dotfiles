@@ -60,9 +60,9 @@ Phases:
 
 Based on the current state, you can:
 
-1. **Continue Research** → `/research-codebase 2025-01-27-ENG-1234-user-auth`
-2. **Update Plan** → `/iterate-plan 2025-01-27-ENG-1234-user-auth`
-3. **Continue Implementation** → `/implement-plan 2025-01-27-ENG-1234-user-auth`
+1. **Continue Research** → `/workflows:research 2025-01-27-ENG-1234-user-auth`
+2. **Update Plan** → `/workflows:iterate 2025-01-27-ENG-1234-user-auth`
+3. **Continue Implementation** → `/workflows:implement 2025-01-27-ENG-1234-user-auth`
 
 What would you like to do?
 ```
@@ -99,7 +99,7 @@ No project folders found matching "[search term]".
 Available projects:
 [Run /list-projects output]
 
-Or start a new project with `/research-codebase`.
+Or start a new project with `/workflows:research`.
 ```
 
 ## Notes

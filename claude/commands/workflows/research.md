@@ -1,5 +1,7 @@
 ---
-description: Research and document codebase comprehensively using parallel agents
+name: workflows:research
+description: "Research and document codebase comprehensively using parallel agents"
+argument-hint: "[project-folder or research question]"
 model: opus
 ---
 
@@ -21,7 +23,7 @@ You are tasked with conducting comprehensive research across the codebase to ans
 When this command is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/research-codebase 2025-01-27-ENG-1234-feature-name`):
+   - If argument provided (e.g., `/workflows:research 2025-01-27-ENG-1234-feature-name`):
      - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
      - If exists, read existing `research.md` for context
      - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
@@ -30,21 +32,12 @@ When this command is invoked:
 
 2. **Auto-detect recent project folders** (if no argument):
    - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
-   - If recent folders found with spec.md, show user options:
-     ```
-     Recent project folders:
+   - Use **AskUserQuestion tool** to show options:
+     - [folder-1] (spec: yes/no, research: yes/no)
+     - [folder-2] (spec: yes/no, research: yes/no)
+     - Start fresh research (no project folder)
 
-     1. [folder-1] (spec: yes, research: no)
-     2. [folder-2] (spec: yes, research: yes - update)
-     3. Start fresh research (no project folder)
-
-     Select a number, or describe what you'd like to research:
-     ```
-
-3. **If no folders or user wants fresh research**, respond with:
-   ```
-   I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
-   ```
+3. **If no folders or user wants fresh research**: Ask the user what they'd like to research using **AskUserQuestion tool** with open-ended options if the topic is unclear, or proceed directly if the argument contained a research question.
 
 Then wait for the user's research query.
 
@@ -169,22 +162,16 @@ Then wait for the user's research query.
    ```
 
 7. **Offer to save research to project folder:**
-   
-   After presenting findings, ask:
-   ```
-   Would you like to save this research to a project folder?
-   
-   Please provide:
-   - Ticket number (e.g., ENG-1234) - or "none"
-   - Feature name in kebab-case (e.g., user-authentication)
-   
-   Or provide an existing folder name to update, or "skip" to not save.
-   ```
-   
+
+   Use **AskUserQuestion tool** to ask:
+   - Save to existing project folder: [list matching folders]
+   - Create new project folder (provide ticket + feature name)
+   - Skip saving
+
    **If user provides ticket and feature name:**
    - Create folder: `$CLAUDE_PROJECTS_DIR/YYYY-MM-DD-ENG-XXXX-feature-name/`
    - Save to `$CLAUDE_PROJECTS_DIR/[folder]/research.md`
-   
+
    **If updating existing project folder:**
    - Append new findings with timestamp separator, or replace if user confirms
 
@@ -210,10 +197,15 @@ Then wait for the user's research query.
    - [Source title](URL) - [What was learned]
 
    ## Next Steps
-   - [ ] Create implementation plan: `/create-plan [folder-name]`
+   - [ ] Create implementation plan: `/workflows:plan [folder-name]`
    ```
 
-8. **Handle follow-up questions:**
+8. **After saving, present next steps using AskUserQuestion tool:**
+   - Proceed to plan: `/workflows:plan [folder-name]`
+   - Research more (follow-up questions)
+   - Done for now — resume later with `/resume-project [folder-name]`
+
+9. **Handle follow-up questions:**
    - If the user has follow-up questions, spawn new sub-agents as needed
    - Build on previous findings rather than starting from scratch
 

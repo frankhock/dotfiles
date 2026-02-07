@@ -43,7 +43,7 @@ If no project folders exist:
 No project folders found in `$CLAUDE_PROJECTS_DIR/`.
 
 To start a new project:
-1. Run `/research-codebase` to research your feature
+1. Run `/workflows:research` to research your feature
 2. When prompted, save to a project folder
 ```
 
