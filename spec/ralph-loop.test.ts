@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
+import { describe, it, expect } from "bun:test";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { RalphLoop, colorize, hyperlink, processAlive } from "../claude/scripts/ralph-loop";
@@ -8,19 +8,9 @@ import { RalphLoop, colorize, hyperlink, processAlive } from "../claude/scripts/
 
 /** Build a RalphLoop with pre-set internal state, bypassing run/parseOptions. */
 function buildRalph(overrides: Record<string, unknown> = {}): RalphLoop {
-  const instance = Object.create(RalphLoop.prototype) as any;
+  const instance = new RalphLoop() as any;
 
-  // Replicate constructor defaults
-  instance.prdFile = null;
-  instance.promptFileOverride = null;
-  instance.maxParallel = null;
-  instance.checkDelay = null;
-  instance.runDir = `/tmp/ralph-loop-test-${process.pid}`;
-  instance.runningPids = new Map();
-  instance.processGroups = new Map();
-  instance.subprocesses = new Map();
-  instance.shouldExit = false;
-  instance.cleaningUp = false;
+  // Override defaults that differ from constructor
   instance.prd = { tasks: [] };
   instance.promptFile = "ralph-prompt.md";
   instance.projectName = "Unknown";
@@ -57,6 +47,17 @@ function createFixtures(
   writeFileSync(join(dir, "CLAUDE.md"), "# Test");
 
   return { dir, prdPath, promptPath };
+}
+
+/** Run fn with cwd temporarily changed to dir. */
+function withDir<T>(dir: string, fn: () => T): T {
+  const orig = process.cwd();
+  process.chdir(dir);
+  try {
+    return fn();
+  } finally {
+    process.chdir(orig);
+  }
 }
 
 /** Capture stdout during a callback. */
@@ -110,7 +111,6 @@ describe("renderProgressBar", () => {
   it("respects custom width", () => {
     const ralph = buildRalph() as any;
     const result: string = ralph.renderProgressBar(5, 10, 10);
-    // 50% of 10 = 5 filled blocks
     expect(result).toContain("█".repeat(5) + "░".repeat(5));
   });
 });
@@ -141,20 +141,19 @@ describe("renderStatusLine", () => {
 
 describe("colorize", () => {
   it("wraps text in ANSI escape codes", () => {
-    const result = colorize("red", "hello");
-    expect(result).toBe("\x1b[0;31mhello\x1b[0m");
+    expect(colorize("red", "hello")).toBe("\x1b[0;31mhello\x1b[0m");
   });
 
   it("handles different colors", () => {
-    const result = colorize("green", "ok");
-    expect(result).toBe("\x1b[0;32mok\x1b[0m");
+    expect(colorize("green", "ok")).toBe("\x1b[0;32mok\x1b[0m");
   });
 });
 
 describe("hyperlink", () => {
   it("produces OSC 8 terminal hyperlink", () => {
-    const result = hyperlink("/tmp/foo.json", "my file");
-    expect(result).toBe("\x1b]8;;file:///tmp/foo.json\x1b\\my file\x1b]8;;\x1b\\");
+    expect(hyperlink("/tmp/foo.json", "my file")).toBe(
+      "\x1b]8;;file:///tmp/foo.json\x1b\\my file\x1b]8;;\x1b\\"
+    );
   });
 });
 
@@ -170,14 +169,12 @@ describe("tasksByStatus", () => {
 
   it("returns tasks matching the given status", () => {
     const ralph = buildRalph({ prd: { tasks } }) as any;
-    const result = ralph.tasksByStatus("pending");
-    expect(result.map((t: any) => t.id)).toEqual(["1", "3"]);
+    expect(ralph.tasksByStatus("pending").map((t: any) => t.id)).toEqual(["1", "3"]);
   });
 
   it("returns empty array for unmatched status", () => {
     const ralph = buildRalph({ prd: { tasks } }) as any;
-    const result = ralph.tasksByStatus("failed");
-    expect(result).toEqual([]);
+    expect(ralph.tasksByStatus("failed")).toEqual([]);
   });
 
   it("returns empty array when tasks is not an array", () => {
@@ -208,15 +205,9 @@ describe("loadConfig", () => {
     const { dir, prdPath, promptPath } = createFixtures({
       tasks: [{ id: "1", status: "pending" }],
     });
-
     const ralph = buildRalph({ prdFile: prdPath, promptFile: promptPath }) as any;
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
-      ralph.loadConfig();
-    } finally {
-      process.chdir(origCwd);
-    }
+
+    withDir(dir, () => ralph.loadConfig());
 
     expect(ralph.maxParallel).toBe(1);
     expect(ralph.checkDelay).toBe(15);
@@ -228,15 +219,9 @@ describe("loadConfig", () => {
       tasks: [],
       prdExtras: { maxParallel: 3, checkInterval: 5 },
     });
-
     const ralph = buildRalph({ prdFile: prdPath, promptFile: promptPath }) as any;
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
-      ralph.loadConfig();
-    } finally {
-      process.chdir(origCwd);
-    }
+
+    withDir(dir, () => ralph.loadConfig());
 
     expect(ralph.maxParallel).toBe(3);
     expect(ralph.checkDelay).toBe(5);
@@ -247,20 +232,14 @@ describe("loadConfig", () => {
       tasks: [],
       prdExtras: { maxParallel: 3, checkInterval: 5 },
     });
-
     const ralph = buildRalph({
       prdFile: prdPath,
       promptFile: promptPath,
       maxParallel: 10,
       checkDelay: 2,
     }) as any;
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
-      ralph.loadConfig();
-    } finally {
-      process.chdir(origCwd);
-    }
+
+    withDir(dir, () => ralph.loadConfig());
 
     expect(ralph.maxParallel).toBe(10);
     expect(ralph.checkDelay).toBe(2);
@@ -275,13 +254,8 @@ describe("loadConfig", () => {
       prdFile: prdPath,
       promptFileOverride: customPrompt,
     }) as any;
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
-      ralph.loadConfig();
-    } finally {
-      process.chdir(origCwd);
-    }
+
+    withDir(dir, () => ralph.loadConfig());
 
     expect(ralph.promptFile).toBe(customPrompt);
   });
@@ -292,8 +266,8 @@ describe("reloadPrd", () => {
     const { prdPath } = createFixtures({
       tasks: [{ id: "x", status: "pending" }],
     });
-
     const ralph = buildRalph({ prdFile: prdPath }) as any;
+
     expect(ralph.reloadPrd()).toBe(true);
     expect(ralph.prd.tasks.length).toBe(1);
   });
@@ -317,8 +291,8 @@ describe("syncRunningStatus", () => {
   it("marks pending tasks as running when their PID is alive", async () => {
     const proc = Bun.spawn(["sleep", "60"]);
     const tasks = [{ id: "t1", status: "pending" }];
-    const runningPids = new Map([["t1", proc.pid]]);
-    const ralph = buildRalph({ prd: { tasks }, runningPids }) as any;
+    const subprocesses = new Map([["t1", proc]]);
+    const ralph = buildRalph({ prd: { tasks }, subprocesses }) as any;
 
     try {
       ralph.syncRunningStatus();
@@ -332,8 +306,8 @@ describe("syncRunningStatus", () => {
   it("does not overwrite completed status", async () => {
     const proc = Bun.spawn(["sleep", "60"]);
     const tasks = [{ id: "t1", status: "completed" }];
-    const runningPids = new Map([["t1", proc.pid]]);
-    const ralph = buildRalph({ prd: { tasks }, runningPids }) as any;
+    const subprocesses = new Map([["t1", proc]]);
+    const ralph = buildRalph({ prd: { tasks }, subprocesses }) as any;
 
     try {
       ralph.syncRunningStatus();
@@ -347,8 +321,8 @@ describe("syncRunningStatus", () => {
   it("does not overwrite failed status", async () => {
     const proc = Bun.spawn(["sleep", "60"]);
     const tasks = [{ id: "t1", status: "failed" }];
-    const runningPids = new Map([["t1", proc.pid]]);
-    const ralph = buildRalph({ prd: { tasks }, runningPids }) as any;
+    const subprocesses = new Map([["t1", proc]]);
+    const ralph = buildRalph({ prd: { tasks }, subprocesses }) as any;
 
     try {
       ralph.syncRunningStatus();
@@ -368,28 +342,22 @@ describe("processFinishedTask", () => {
     const runDir = mkdtempSync(join(tmpdir(), "ralph-run-"));
     writeFileSync(join(runDir, "t1.log"), "some output");
 
-    const runningPids = new Map([["t1", 999]]);
-    const processGroups = new Map([["t1", 999]]);
+    const subprocesses = new Map<string, any>([["t1", { pid: 999 }]]);
     const ralph = buildRalph({
       prdFile: prdPath,
       runDir,
-      runningPids,
-      processGroups,
+      subprocesses,
       promptFile: promptPath,
     }) as any;
 
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
+    withDir(dir, () => {
       ralph.loadConfig();
-      ralph.processFinishedTask("t1", 999, 0);
-    } finally {
-      process.chdir(origCwd);
-    }
+      ralph.processFinishedTask("t1", 0);
+    });
 
     const saved = JSON.parse(readFileSync(prdPath, "utf-8"));
     expect(saved.tasks[0].status).toBe("completed");
-    expect(ralph.runningPids.has("t1")).toBe(false);
+    expect(ralph.subprocesses.has("t1")).toBe(false);
     expect(existsSync(join(runDir, "t1.log"))).toBe(true);
   });
 
@@ -399,24 +367,18 @@ describe("processFinishedTask", () => {
     });
     const runDir = mkdtempSync(join(tmpdir(), "ralph-run-"));
 
-    const runningPids = new Map([["t1", 999]]);
-    const processGroups = new Map([["t1", 999]]);
+    const subprocesses = new Map<string, any>([["t1", { pid: 999 }]]);
     const ralph = buildRalph({
       prdFile: prdPath,
       runDir,
-      runningPids,
-      processGroups,
+      subprocesses,
       promptFile: promptPath,
     }) as any;
 
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
+    withDir(dir, () => {
       ralph.loadConfig();
-      ralph.processFinishedTask("t1", 999, 1);
-    } finally {
-      process.chdir(origCwd);
-    }
+      ralph.processFinishedTask("t1", 1);
+    });
 
     const saved = JSON.parse(readFileSync(prdPath, "utf-8"));
     expect(saved.tasks[0].status).toBe("failed");
@@ -448,33 +410,25 @@ describe("checkRunningTasks", () => {
     });
     const runDir = mkdtempSync(join(tmpdir(), "ralph-run-"));
 
-    const proc = Bun.spawn(["true"]); // exits immediately with 0
+    const proc = Bun.spawn(["true"]);
     await proc.exited;
 
-    const runningPids = new Map([["t1", proc.pid]]);
-    const processGroups = new Map([["t1", proc.pid]]);
     const subprocesses = new Map([["t1", proc]]);
     const ralph = buildRalph({
       prdFile: prdPath,
       runDir,
-      runningPids,
-      processGroups,
       subprocesses,
       promptFile: promptPath,
     }) as any;
 
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
+    withDir(dir, () => {
       ralph.loadConfig();
-      await ralph.checkRunningTasks();
-    } finally {
-      process.chdir(origCwd);
-    }
+      ralph.checkRunningTasks();
+    });
 
     const saved = JSON.parse(readFileSync(prdPath, "utf-8"));
     expect(saved.tasks[0].status).toBe("completed");
-    expect(ralph.runningPids.size).toBe(0);
+    expect(ralph.subprocesses.size).toBe(0);
   });
 
   it("marks failed for non-zero exit", async () => {
@@ -483,29 +437,21 @@ describe("checkRunningTasks", () => {
     });
     const runDir = mkdtempSync(join(tmpdir(), "ralph-run-"));
 
-    const proc = Bun.spawn(["false"]); // exits with 1
+    const proc = Bun.spawn(["false"]);
     await proc.exited;
 
-    const runningPids = new Map([["t1", proc.pid]]);
-    const processGroups = new Map([["t1", proc.pid]]);
     const subprocesses = new Map([["t1", proc]]);
     const ralph = buildRalph({
       prdFile: prdPath,
       runDir,
-      runningPids,
-      processGroups,
       subprocesses,
       promptFile: promptPath,
     }) as any;
 
-    const origCwd = process.cwd();
-    process.chdir(dir);
-    try {
+    withDir(dir, () => {
       ralph.loadConfig();
-      await ralph.checkRunningTasks();
-    } finally {
-      process.chdir(origCwd);
-    }
+      ralph.checkRunningTasks();
+    });
 
     const saved = JSON.parse(readFileSync(prdPath, "utf-8"));
     expect(saved.tasks[0].status).toBe("failed");
@@ -568,8 +514,10 @@ describe("renderTaskList", () => {
   it("renders task IDs as OSC 8 hyperlinks to log files", () => {
     const tasks = [{ id: "T-001", status: "running", title: "Test task" }];
     const runDir = "/tmp/ralph-loop-test";
-    const runningPids = new Map([["T-001", 123]]);
-    const ralph = buildRalph({ prd: { tasks }, runDir, runningPids }) as any;
+    // Provide a fake subprocess so PID renders
+    const fakeProc = { pid: 123 } as any;
+    const subprocesses = new Map([["T-001", fakeProc]]);
+    const ralph = buildRalph({ prd: { tasks }, runDir, subprocesses }) as any;
 
     const output = captureStdout(() => ralph.renderTaskList());
     expect(output).toContain(
@@ -588,19 +536,5 @@ describe("renderTaskList", () => {
     const output = captureStdout(() => ralph.renderTaskList(2));
     const pendingCount = (output.match(/pending/g) || []).length;
     expect(pendingCount).toBe(2);
-  });
-});
-
-// ─── Shell escape ───────────────────────────────────────────────────────────
-
-describe("shellEscape", () => {
-  it("wraps in single quotes", () => {
-    const ralph = buildRalph() as any;
-    expect(ralph.shellEscape("hello world")).toBe("'hello world'");
-  });
-
-  it("escapes embedded single quotes", () => {
-    const ralph = buildRalph() as any;
-    expect(ralph.shellEscape("it's")).toBe("'it'\\''s'");
   });
 });

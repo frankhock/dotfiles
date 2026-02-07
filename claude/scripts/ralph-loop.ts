@@ -50,6 +50,25 @@ const COLORS = {
 
 type Color = keyof typeof COLORS;
 
+const BANNER_HEAD = [
+  " ⠀⠀⠀⠀⠀⠀⣀⣤⣶⡶⢛⠟⡿⠻⢻⢿⢶⢦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⠀⢀⣠⡾⡫⢊⠌⡐⢡⠊⢰⠁⡎⠘⡄⢢⠙⡛⡷⢤⡀⠀⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⢠⢪⢋⡞⢠⠃⡜⠀⠎⠀⠉⠀⠃⠀⠃⠀⠃⠙⠘⠊⢻⠦⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⢇⡇⡜⠀⠜⠀⠁⠀⢀⠔⠉⠉⠑⠄⠀⠀⡰⠊⠉⠑⡄⡇⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⡸⠧⠄⠀⠀⠀⠀⠀⠘⡀⠾⠀⠀⣸⠀⠀⢧⠀⠛⠀⠌⡇⠀⠀⠀⠀⠀⠀",
+  " ⠀⠘⡇⠀⠀⠀⠀⠀⠀⠀⠀⠙⠒⠒⠚⠁⠈⠉⠲⡍⠒⠈⠀⡇⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⠈⠲⣆⠀⠀⠀⠀⠀⠀⠀⠀⣠⠖⠉⡹⠤⠶⠁⠀⠀⠀⠈⢦⠀⠀⠀⠀⠀",
+  " ⠀⠀⠀⠀⠈⣦⡀⠀⠀⠀⠀⠧⣴⠁⠀⠘⠓⢲⣄⣀⣀⣀⡤⠔⠃⠀⠀⠀⠀⠀",
+];
+
+const BANNER_BODY = [
+  " ⠀⠀⠀⠀⣜⠀⠈⠓⠦⢄⣀⣀⣸⠀⠀⠀⠀⠁⢈⢇⣼⡁⠀⠀⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⢠⠒⠛⠲⣄⠀⠀⠀⣠⠏⠀⠉⠲⣤⠀⢸⠋⢻⣤⡛⣄⠀⠀⠀⠀⠀⠀⠀",
+  " ⠀⠀⢡⠀⠀⠀⠀⠉⢲⠾⠁⠀⠀⠀⠀⠈⢳⡾⣤⠟⠁⠹⣿⢆⠀⠀⠀⠀⠀⠀",
+  " ⠀⢀⠼⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠈⣧⠀⠀⠀⠀⠀",
+  " ⠀⡏⠀⠘⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀",
+];
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 export function colorize(color: Color, text: string): string {
@@ -97,9 +116,7 @@ export class RalphLoop {
   private maxParallel: number | null = null;
   private checkDelay: number | null = null;
   private runDir: string;
-  private runningPids = new Map<string, number>(); // task_id => pid
-  private processGroups = new Map<string, number>(); // task_id => pgid
-  private subprocesses = new Map<string, Bun.Subprocess>(); // task_id => subprocess
+  private subprocesses = new Map<string, Bun.Subprocess>();
   private shouldExit = false;
   private cleaningUp = false;
   private prd!: PrdConfig;
@@ -126,7 +143,6 @@ export class RalphLoop {
   private parseOptions(): void {
     const args = process.argv.slice(2);
 
-    // Manual parse to match Ruby's OptionParser behavior
     let i = 0;
     while (i < args.length) {
       const arg = args[i];
@@ -151,10 +167,12 @@ export class RalphLoop {
         case "--kill":
           this.killAllProcesses();
           process.exit(0);
+          break;
         case "-h":
         case "--help":
           this.printHelp();
           process.exit(0);
+          break;
         default:
           error(`Unknown option: ${arg}`);
           this.printHelp();
@@ -163,7 +181,6 @@ export class RalphLoop {
       i++;
     }
 
-    // Try default prd file if not specified
     if (this.prdFile === null) {
       if (existsSync("ralph-tasks.json")) {
         this.prdFile = "ralph-tasks.json";
@@ -263,47 +280,8 @@ export class RalphLoop {
     const bc = COLORS.brightCyan;
     const x = COLORS.reset;
 
-    // Head (yellow)
-    console.log(
-      `${y} ⠀⠀⠀⠀⠀⠀⣀⣤⣶⡶⢛⠟⡿⠻⢻⢿⢶⢦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⠀⢀⣠⡾⡫⢊⠌⡐⢡⠊⢰⠁⡎⠘⡄⢢⠙⡛⡷⢤⡀⠀⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⢠⢪⢋⡞⢠⠃⡜⠀⠎⠀⠉⠀⠃⠀⠃⠀⠃⠙⠘⠊⢻⠦⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⢇⡇⡜⠀⠜⠀⠁⠀⢀⠔⠉⠉⠑⠄⠀⠀⡰⠊⠉⠑⡄⡇⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⡸⠧⠄⠀⠀⠀⠀⠀⠘⡀⠾⠀⠀⣸⠀⠀⢧⠀⠛⠀⠌⡇⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠘⡇⠀⠀⠀⠀⠀⠀⠀⠀⠙⠒⠒⠚⠁⠈⠉⠲⡍⠒⠈⠀⡇⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⠈⠲⣆⠀⠀⠀⠀⠀⠀⠀⠀⣠⠖⠉⡹⠤⠶⠁⠀⠀⠀⠈⢦⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${y} ⠀⠀⠀⠀⠈⣦⡀⠀⠀⠀⠀⠧⣴⠁⠀⠘⠓⢲⣄⣀⣀⣀⡤⠔⠃⠀⠀⠀⠀⠀${x}`
-    );
-    // Body/shirt (bright cyan)
-    console.log(
-      `${bc} ⠀⠀⠀⠀⣜⠀⠈⠓⠦⢄⣀⣀⣸⠀⠀⠀⠀⠁⢈⢇⣼⡁⠀⠀⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${bc} ⠀⠀⢠⠒⠛⠲⣄⠀⠀⠀⣠⠏⠀⠉⠲⣤⠀⢸⠋⢻⣤⡛⣄⠀⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${bc} ⠀⠀⢡⠀⠀⠀⠀⠉⢲⠾⠁⠀⠀⠀⠀⠈⢳⡾⣤⠟⠁⠹⣿⢆⠀⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${bc} ⠀⢀⠼⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠈⣧⠀⠀⠀⠀⠀${x}`
-    );
-    console.log(
-      `${bc} ⠀⡏⠀⠘⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀${x}`
-    );
+    for (const line of BANNER_HEAD) console.log(`${y}${line}${x}`);
+    for (const line of BANNER_BODY) console.log(`${bc}${line}${x}`);
     console.log();
     console.log(`${colorize("yellow", "Ralph Loop")} | ${this.projectName}`);
   }
@@ -368,9 +346,9 @@ export class RalphLoop {
           statusStr = colorize("green", "completed");
           break;
         case "running": {
-          const pid = this.runningPids.get(id);
+          const proc = this.subprocesses.get(id);
           statusStr = colorize("cyan", "running");
-          pidStr = pid ? `  (PID ${pid})` : "";
+          pidStr = proc ? `  (PID ${proc.pid})` : "";
           break;
         }
         case "failed":
@@ -418,8 +396,8 @@ export class RalphLoop {
 
   private syncRunningStatus(): void {
     for (const task of this.prd.tasks) {
-      const pid = this.runningPids.get(task.id);
-      if (pid !== undefined && processAlive(pid)) {
+      const proc = this.subprocesses.get(task.id);
+      if (proc && processAlive(proc.pid)) {
         if (task.status !== "completed" && task.status !== "failed") {
           task.status = "running";
         }
@@ -433,7 +411,6 @@ export class RalphLoop {
     const logFile = join(this.runDir, `${taskId}.log`);
     const promptFilePath = join(this.runDir, `${taskId}-prompt.txt`);
 
-    // Build prompt with task details injected inline
     const promptContent = readFileSync(this.promptFile, "utf-8");
     const task = this.prd.tasks.find((t) => t.id === taskId);
     if (!task) return;
@@ -442,56 +419,37 @@ export class RalphLoop {
     const taskPrompt = `# YOUR ASSIGNED TASK\n\n\`\`\`json\n${taskJson}\n\`\`\`\n\n${promptContent}`;
     writeFileSync(promptFilePath, taskPrompt);
 
-    // Spawn claude via bash, reading prompt from file via stdin
     const logOutput = Bun.file(logFile);
     const proc = Bun.spawn(
-      [
-        "/bin/bash",
-        "-c",
-        `claude --print --dangerously-skip-permissions --model sonnet < ${this.shellEscape(promptFilePath)}`,
-      ],
+      ["claude", "--print", "--dangerously-skip-permissions", "--model", "sonnet"],
       {
+        stdin: Bun.file(promptFilePath),
         stdout: logOutput,
         stderr: logOutput,
       }
     );
 
-    const pid = proc.pid;
-    this.runningPids.set(taskId, pid);
-    this.processGroups.set(taskId, pid);
     this.subprocesses.set(taskId, proc);
 
-    // Update status in JSON
     task.status = "running";
     this.savePrd();
   }
 
-  private async checkRunningTasks(): Promise<void> {
-    const finished: Array<{ taskId: string; pid: number; exitCode: number }> =
-      [];
+  private checkRunningTasks(): void {
+    const finished: Array<{ taskId: string; exitCode: number }> = [];
 
     for (const [taskId, proc] of this.subprocesses) {
-      // Check if the process has exited by looking at exitCode
-      // Bun's Subprocess.exited is a promise that resolves when the process exits
       if (proc.exitCode !== null) {
-        finished.push({
-          taskId,
-          pid: proc.pid,
-          exitCode: proc.exitCode ?? 0,
-        });
+        finished.push({ taskId, exitCode: proc.exitCode });
       }
     }
 
-    for (const { taskId, pid, exitCode } of finished) {
-      this.processFinishedTask(taskId, pid, exitCode);
+    for (const { taskId, exitCode } of finished) {
+      this.processFinishedTask(taskId, exitCode);
     }
   }
 
-  private processFinishedTask(
-    taskId: string,
-    _pid: number,
-    exitCode: number
-  ): void {
+  private processFinishedTask(taskId: string, exitCode: number): void {
     const task = this.prd.tasks.find((t) => t.id === taskId);
 
     if (task) {
@@ -499,8 +457,6 @@ export class RalphLoop {
       this.savePrd();
     }
 
-    this.runningPids.delete(taskId);
-    this.processGroups.delete(taskId);
     this.subprocesses.delete(taskId);
   }
 
@@ -508,33 +464,26 @@ export class RalphLoop {
 
   private async mainLoop(): Promise<void> {
     while (!this.shouldExit) {
-      // Reload PRD to get latest status
       if (!this.reloadPrd()) {
         await sleep(1000);
         continue;
       }
 
-      // Validate tasks array exists
       if (!Array.isArray(this.prd.tasks)) {
         error("ralph-tasks.json missing 'tasks' array");
         await sleep(1000);
         continue;
       }
 
-      // Update running task statuses in JSON
       this.syncRunningStatus();
+      this.checkRunningTasks();
 
-      // Check on running tasks (reap finished processes)
-      await this.checkRunningTasks();
-
-      // Get current counts
       const passedCount = this.countByStatus("completed");
       const runningCount = this.countByStatus("running");
       const failedCount = this.countByStatus("failed");
       const pendingCount = this.countByStatus("pending");
       const total = this.prd.tasks.length;
 
-      // Render full TUI
       clearScreen();
       console.log();
       this.displayBanner();
@@ -557,7 +506,6 @@ export class RalphLoop {
 
       this.renderTaskList();
 
-      // Check if all done (completed or failed, none pending/running)
       if (pendingCount === 0 && runningCount === 0 && total > 0) {
         console.log();
 
@@ -576,8 +524,8 @@ export class RalphLoop {
 
       // Start new tasks if we have capacity
       let actualRunning = 0;
-      for (const [, pid] of this.runningPids) {
-        if (processAlive(pid)) actualRunning++;
+      for (const [, proc] of this.subprocesses) {
+        if (processAlive(proc.pid)) actualRunning++;
       }
       let available = this.maxParallel! - actualRunning;
 
@@ -588,11 +536,10 @@ export class RalphLoop {
           if (available <= 0) break;
           this.startTask(task.id);
           available--;
-          await sleep(500); // Small delay between spawns
+          await sleep(500);
         }
       }
 
-      // Countdown with refresh each second
       console.log();
       for (let i = 0; i < this.checkDelay!; i++) {
         if (this.shouldExit) break;
@@ -613,52 +560,37 @@ export class RalphLoop {
     if (this.cleaningUp) return;
     this.cleaningUp = true;
 
-    const pgids = [...new Set(this.processGroups.values())];
-
-    if (pgids.length > 0) {
+    if (this.subprocesses.size > 0) {
       process.stderr.write(
-        `\nCleaning up ${pgids.length} Claude process group(s)...\n`
+        `\nCleaning up ${this.subprocesses.size} Claude process(es)...\n`
       );
 
-      // TERM the entire process group (negative PID = kill group)
-      for (const pgid of pgids) {
+      for (const [, proc] of this.subprocesses) {
         try {
-          process.kill(-pgid, "SIGTERM");
+          proc.kill();
         } catch {
-          // Already dead or no permission
+          // Already dead
         }
       }
 
-      // Give processes a moment to exit gracefully (synchronous for cleanup)
       Bun.sleepSync(2000);
 
-      // Force kill any survivors
-      for (const pgid of pgids) {
+      for (const [, proc] of this.subprocesses) {
         try {
-          process.kill(-pgid, "SIGKILL");
+          proc.kill(9);
         } catch {
-          // Already dead or no permission
+          // Already dead
         }
       }
     }
 
     // Fallback: pkill any claude --print processes we may have missed
-    try {
-      Bun.spawnSync(["pkill", "-TERM", "-f", "claude --print"]);
-    } catch {
-      // ignore
-    }
+    Bun.spawnSync(["pkill", "-TERM", "-f", "claude --print"]);
     Bun.sleepSync(500);
-    try {
-      Bun.spawnSync(["pkill", "-9", "-f", "claude --print"]);
-    } catch {
-      // ignore
-    }
+    Bun.spawnSync(["pkill", "-9", "-f", "claude --print"]);
 
-    // Reset any "running" tasks back to "pending" so they retry on next run
     this.resetRunningTasksToPending();
 
-    // Clean up master PID file
     try {
       unlinkSync(MASTER_PID_FILE);
     } catch {
@@ -685,7 +617,7 @@ export class RalphLoop {
         writeFileSync(this.prdFile, JSON.stringify(prd, null, 2));
       }
     } catch {
-      // Best-effort — don't let JSON errors prevent the rest of cleanup
+      // Best-effort
     }
   }
 
@@ -694,7 +626,6 @@ export class RalphLoop {
   private killAllProcesses(): void {
     console.log("Killing all ralph-loop and claude processes...");
 
-    // Kill master if running
     if (existsSync(MASTER_PID_FILE)) {
       const masterPid = parseInt(readFileSync(MASTER_PID_FILE, "utf-8"), 10);
       if (processAlive(masterPid)) {
@@ -716,19 +647,12 @@ export class RalphLoop {
       }
     }
 
-    // Kill all claude --print processes
     console.log("  Killing all claude --print processes...");
     Bun.spawnSync(["pkill", "-TERM", "-f", "claude --print"]);
     Bun.sleepSync(1000);
     Bun.spawnSync(["pkill", "-9", "-f", "claude --print"]);
 
     console.log("Done.");
-  }
-
-  // ─── Utilities ──────────────────────────────────────────────────────────
-
-  private shellEscape(str: string): string {
-    return "'" + str.replace(/'/g, "'\\''") + "'";
   }
 }
 
