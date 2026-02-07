@@ -52,7 +52,7 @@ type Color = keyof typeof COLORS;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function colorize(color: Color, text: string): string {
+export function colorize(color: Color, text: string): string {
   return `${COLORS[color]}${text}${COLORS.reset}`;
 }
 
@@ -68,7 +68,7 @@ function success(msg: string): void {
   console.log(colorize("green", msg));
 }
 
-function hyperlink(path: string, text: string): string {
+export function hyperlink(path: string, text: string): string {
   return `\x1b]8;;file://${path}\x1b\\${text}\x1b]8;;\x1b\\`;
 }
 
@@ -80,7 +80,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function processAlive(pid: number): boolean {
+export function processAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
     return true;
@@ -91,7 +91,7 @@ function processAlive(pid: number): boolean {
 
 // ─── RalphLoop ──────────────────────────────────────────────────────────────
 
-class RalphLoop {
+export class RalphLoop {
   private prdFile: string | null = null;
   private promptFileOverride: string | null = null;
   private maxParallel: number | null = null;
@@ -734,8 +734,10 @@ class RalphLoop {
 
 // ─── Entry Point ────────────────────────────────────────────────────────────
 
-const ralph = new RalphLoop();
-ralph.run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.main) {
+  const ralph = new RalphLoop();
+  ralph.run().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
