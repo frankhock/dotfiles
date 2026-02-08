@@ -183,6 +183,29 @@ const PATTERNS: Pattern[] = [
     reason: "rm targeting ~/brain directory (protected)",
   },
 
+  // CUSTOM - Protect ~/.claude config directory
+  {
+    level: "high",
+    id: "rm-claude-config",
+    regex:
+      /\brm\s+(-.+\s+)*(["']?~\/\.claude|["']?\/Users\/frankhock\/\.claude|["']?\$HOME\/\.claude)/,
+    reason: "rm targeting ~/.claude config directory (protected)",
+  },
+
+  // CUSTOM - Block destructive SQL via shell
+  {
+    level: "high",
+    id: "sql-drop-database",
+    regex: /\bDROP\s+(DATABASE|SCHEMA)\b/i,
+    reason: "DROP DATABASE detected in command",
+  },
+  {
+    level: "high",
+    id: "sql-drop-table",
+    regex: /\bDROP\s+TABLE\b/i,
+    reason: "DROP TABLE detected in command",
+  },
+
   // STRICT - Cautionary, context-dependent
   {
     level: "strict",

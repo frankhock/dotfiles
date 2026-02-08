@@ -205,6 +205,35 @@ describe("HIGH: rm ~/brain (custom)", () => {
     expectBlocked("rm -rf $HOME/brain", "rm-brain"));
 });
 
+describe("HIGH: rm ~/.claude (custom)", () => {
+  test("rm -rf ~/.claude", () =>
+    expectBlocked("rm -rf ~/.claude", "rm-claude-config"));
+  test("rm -rf /Users/frankhock/.claude", () =>
+    expectBlocked("rm -rf /Users/frankhock/.claude", "rm-claude-config"));
+  test("rm -rf $HOME/.claude", () =>
+    expectBlocked("rm -rf $HOME/.claude", "rm-claude-config"));
+  test("rm ~/.claude/hooks", () =>
+    expectBlocked("rm -rf ~/.claude/hooks", "rm-claude-config"));
+});
+
+describe("HIGH: DROP DATABASE (custom)", () => {
+  test("psql DROP DATABASE", () =>
+    expectBlocked("psql -c 'DROP DATABASE production'", "sql-drop-database"));
+  test("mysql drop database (case insensitive)", () =>
+    expectBlocked("mysql -e 'drop database mydb'", "sql-drop-database"));
+  test("DROP SCHEMA", () =>
+    expectBlocked("psql -c 'DROP SCHEMA public'", "sql-drop-database"));
+  test("allows CREATE DATABASE", () => expectAllowed("psql -c 'CREATE DATABASE test'"));
+});
+
+describe("HIGH: DROP TABLE (custom)", () => {
+  test("psql DROP TABLE", () =>
+    expectBlocked("psql -c 'DROP TABLE users'", "sql-drop-table"));
+  test("mysql drop table (case insensitive)", () =>
+    expectBlocked("mysql -e 'drop table sessions'", "sql-drop-table"));
+  test("allows CREATE TABLE", () => expectAllowed("psql -c 'CREATE TABLE test (id int)'"));
+});
+
 // ─── STRICT patterns ─────────────────────────────────────────────────
 
 describe("STRICT: git force push any branch", () => {
