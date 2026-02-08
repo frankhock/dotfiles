@@ -40,3 +40,6 @@ export CLAUDE_PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/brain/dev/projects}"
 
 # Load user-installed binaries
 export PATH="$HOME/.local/bin:$PATH"
+
+# bun completions
+[ -s "/Users/frankhock/.bun/_bun" ] && source "/Users/frankhock/.bun/_bun"
