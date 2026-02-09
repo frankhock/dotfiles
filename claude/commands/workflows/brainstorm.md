@@ -179,7 +179,7 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 **Git commits:**
 - Project folder saves (`$CLAUDE_PROJECTS_DIR`): No commit (outside project repo)
 
-**After saving, use AskUserQuestion tool to present next steps:**
+**After saving**, suggest the user clear context with `/clear` to free up the context window, then use **AskUserQuestion tool** to present next steps:
 - Proceed to research: `/workflows:research [folder-name]`
 - Refine spec further
 - Done for now
