@@ -14,6 +14,7 @@ alias gs='git status'
 
 # Shortcut commands
 alias cc='claude --model opus'
+alias ccd='claude --model opus --dangerously-skip-permissions'
 alias cch='claude --model haiku'
 
 # Consider moving these to project-specific shell configs or .envrc files

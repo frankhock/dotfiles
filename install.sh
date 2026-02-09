@@ -38,9 +38,10 @@ done
 # === Symlinks ===
 
 ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
+ln -sf ~/dotfiles/shell/.zshenv ~/.zshenv
 ln -sf ~/dotfiles/shell/.zshrc ~/.zshrc
-ln -sf ~/dotfiles/shell/.aliases ~/.aliases
-ln -sf ~/dotfiles/shell/.functions ~/.functions
+ln -sf ~/dotfiles/shell/.aliases.sh ~/.aliases.sh
+ln -sf ~/dotfiles/shell/.functions.sh ~/.functions.sh
 
 ln -sf ~/dotfiles/shell/starship.toml ~/.config/starship.toml
 
