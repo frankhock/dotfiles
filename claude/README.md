@@ -28,10 +28,10 @@ Additional commands support iteration and autonomous execution:
 | `/workflows:iterate` | Refine an existing plan based on feedback |
 | `/workflows:plan-ralph` | Create plans for autonomous parallel execution |
 
-All artifacts are stored in project folders under `$CLAUDE_PROJECTS_DIR`:
+All artifacts are stored in project folders under `~/brain/dev/projects`:
 
 ```
-$CLAUDE_PROJECTS_DIR/
+~/brain/dev/projects/
 └── YYYY-MM-DD-ENG-XXXX-feature-name/
     ├── spec.md          # From brainstorm
     ├── research.md      # From research
@@ -54,7 +54,7 @@ writing code or diving into the codebase.
 
 **What it does:**
 
-1. **Initial Setup** — Detects recent project folders in `$CLAUDE_PROJECTS_DIR`
+1. **Initial Setup** — Detects recent project folders in `~/brain/dev/projects`
    and offers to resume an existing spec or start fresh. Pass a folder name as
    an argument to skip detection:
    ```
@@ -270,7 +270,7 @@ for autonomous execution:
   "description": "Brief description",
   "maxParallel": 1,
   "checkInterval": 15,
-  "promptFile": "$CLAUDE_PROJECTS_DIR/[folder]/ralph-prompt.md",
+  "promptFile": "~/brain/dev/projects/[folder]/ralph-prompt.md",
   "tasks": [
     {
       "id": "T-001",
@@ -432,14 +432,8 @@ Add the plugin to your Claude Code settings (`.claude/settings.json`):
 
 ### Configuration
 
-Set the `CLAUDE_PROJECTS_DIR` environment variable to control where project
-artifacts are stored:
-
-```bash
-export CLAUDE_PROJECTS_DIR="$HOME/claude-projects"
-```
-
-If not set, you'll be prompted for a save location during each workflow.
+Project artifacts are stored at `~/brain/dev/projects/`. This path is
+hardcoded in all workflow commands for reliability.
 
 ---
 

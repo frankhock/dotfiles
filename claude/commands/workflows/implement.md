@@ -1,12 +1,12 @@
 ---
 name: workflows:implement
-description: "Implement technical plans from $CLAUDE_PROJECTS_DIR with verification"
+description: "Implement technical plans from ~/brain/dev/projects with verification"
 argument-hint: "[project-folder]"
 ---
 
 # Implement Plan
 
-You are tasked with implementing an approved technical plan from `$CLAUDE_PROJECTS_DIR/`. These plans contain phases with specific changes and success criteria.
+You are tasked with implementing an approved technical plan from `~/brain/dev/projects/`. These plans contain phases with specific changes and success criteria.
 
 ## Initial Setup
 
@@ -14,14 +14,14 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Read `research.md` for context (understand codebase findings)
      - Read `plan.md` for implementation instructions
      - Proceed with implementation
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan.md from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Find project folders with plan.md from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
      - [folder-1] (Research: yes/no, Plan: yes/no)
      - [folder-2] (Research: yes/no, Plan: yes/no)

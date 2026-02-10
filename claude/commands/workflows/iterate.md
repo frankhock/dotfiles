@@ -15,7 +15,7 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Read `plan.md` from folder
      - Proceed with iteration
    - If argument is a direct plan path (legacy):
@@ -23,7 +23,7 @@ When this command is invoked:
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan.md from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Find project folders with plan.md from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
      - [folder-1] (plan: yes)
      - [folder-2] (plan: yes)
@@ -111,7 +111,7 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
 ### Step 4: Update the Plan
 
 1. **Make focused, precise edits** to the existing plan:
-   - If working with project folder: edit `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
+   - If working with project folder: edit `~/brain/dev/projects/[folder]/plan.md`
    - If working with legacy path: edit at that path
    - Use the Edit tool for surgical changes
    - Maintain the existing structure unless explicitly changing it
@@ -133,7 +133,7 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
 
 1. **Present the changes made**:
    ```
-   I've updated the plan at `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
+   I've updated the plan at `~/brain/dev/projects/[folder]/plan.md`
 
    Changes made:
    - [Specific change 1]

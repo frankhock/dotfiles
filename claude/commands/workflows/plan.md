@@ -15,7 +15,7 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/workflows:plan 2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If folder doesn't exist, inform user and stop
      - Verify `spec.md` exists
      - If file is missing, inform user and stop
@@ -23,7 +23,7 @@ When this command is invoked:
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Find folders from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
      - [folder-1] (spec: yes/no, research: yes/no, plan: yes/no)
      - [folder-2] (spec: yes/no, research: yes/no, plan: yes/no)
@@ -180,7 +180,7 @@ Once aligned on approach:
 After structure approval:
 
 1. **Determine save location:**
-   - save to `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
+   - save to `~/brain/dev/projects/[folder]/plan.md`
 
    **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
    - YYYY-MM-DD is today's date
@@ -328,7 +328,7 @@ After structure approval:
 ## References
 
 - Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
-- Related research: `$CLAUDE_PROJECTS_DIR/research/[relevant].md`
+- Related research: `~/brain/dev/projects/research/[relevant].md`
 - Similar implementation: `[file:line]`
 
 ## Next Steps
@@ -372,7 +372,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `$CLAUDE_PROJECTS_DIR/[folder]/plan.md`
+   `~/brain/dev/projects/[folder]/plan.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?

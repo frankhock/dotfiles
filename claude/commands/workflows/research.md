@@ -24,14 +24,14 @@ When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/workflows:research 2025-01-27-ENG-1234-feature-name`):
-     - Verify folder exists at `$CLAUDE_PROJECTS_DIR/[argument]/`
+     - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If exists, read existing `research.md` for context
      - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `$CLAUDE_PROJECTS_DIR/`
+   - Find folders from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
      - [folder-1] (spec: yes/no, research: yes/no)
      - [folder-2] (spec: yes/no, research: yes/no)
@@ -169,8 +169,8 @@ Then wait for the user's research query.
    - Skip saving
 
    **If user provides ticket and feature name:**
-   - Create folder: `$CLAUDE_PROJECTS_DIR/YYYY-MM-DD-ENG-XXXX-feature-name/`
-   - Save to `$CLAUDE_PROJECTS_DIR/[folder]/research.md`
+   - Create folder: `~/brain/dev/projects/YYYY-MM-DD-ENG-XXXX-feature-name/`
+   - Save to `~/brain/dev/projects/[folder]/research.md`
 
    **If updating existing project folder:**
    - Append new findings with timestamp separator, or replace if user confirms
