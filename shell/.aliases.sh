@@ -13,7 +13,7 @@ alias bi='bundle install'
 alias gs='git status'
 
 # Shortcut commands
-alias cc='claude --model opus'
+alias cc='claude --model opus --dangerously-skip-permissions'
 alias ccd='claude --model opus --dangerously-skip-permissions'
 alias cch='claude --model haiku'
 
