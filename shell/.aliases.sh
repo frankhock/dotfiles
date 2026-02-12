@@ -19,5 +19,5 @@ alias cch='claude --model haiku'
 
 # Consider moving these to project-specific shell configs or .envrc files
 alias bsetup='bi && yarn && bin/db-migrate'
-alias reset_db='bin/rails db:drop && bin/rails db:create && bin/rails db:migrate:with_data && bundle exec rake elasticsearch:development_reindex && bin/rails db:seed && bin/rails db:staging:seed && bin/rails log:clear tmp:clear'
+alias db_reset='bin/rails db:drop db:create db:migrate:with_data db:seed db:staging:seed log:clear tmp:clear && bundle exec rake elasticsearch:development_reindex'
 alias ui='cd ~/bits/user-interviews/rails-server'
