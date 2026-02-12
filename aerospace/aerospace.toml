@@ -1,0 +1,135 @@
+# AeroSpace tiling window manager config
+# Docs: https://nikitabobko.github.io/AeroSpace/guide
+
+config-version = 2
+start-at-login = false
+automatically-unhide-macos-hidden-apps = true
+
+# Default layout: horizontal tiling (side by side)
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'horizontal'
+
+# Normalizations keep the window tree clean
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# Gaps for visual separation
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.bottom = 8
+outer.top = 8
+outer.right = 8
+
+# Assign workspaces to monitors
+# 'main' = primary monitor, 'secondary' = the other one
+[workspace-to-monitor-force-assignment]
+1 = 'main'
+2 = 'secondary'
+3 = 'main'
+4 = 'secondary'
+5 = 'secondary'
+
+# ── Main mode keybindings ─────────────────────────────────────────────
+
+[mode.main.binding]
+
+# Navigation: focus between windows
+alt-left = 'focus left'
+alt-right = 'focus right'
+alt-up = 'focus up'
+alt-down = 'focus down'
+
+# Move windows
+alt-shift-left = 'move left'
+alt-shift-right = 'move right'
+alt-shift-up = 'move up'
+alt-shift-down = 'move down'
+
+# Workspace switching
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+
+# Move window to workspace
+alt-shift-1 = 'move-node-to-workspace 1'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-shift-3 = 'move-node-to-workspace 3'
+alt-shift-4 = 'move-node-to-workspace 4'
+alt-shift-5 = 'move-node-to-workspace 5'
+
+# Layout controls
+alt-f = 'fullscreen'
+alt-tab = 'workspace-back-and-forth'
+alt-shift-m = 'move-workspace-to-monitor next'
+alt-slash = 'layout tiles horizontal vertical'
+alt-comma = 'layout accordion horizontal vertical'
+
+# Balance windows to equal size
+alt-b = 'balance-sizes'
+
+# Apply 2/3 + 1/3 preset: focuses left window and widens it
+# Tune the +400 value if needed for your monitor resolution
+alt-p = ['flatten-workspace-tree', 'layout h_tiles', 'balance-sizes', 'focus left', 'resize width +400']
+
+# Launch dev workspace (Zed + iTerm, routed to workspace 1 by window rules)
+alt-shift-d = ['exec-and-forget open -a "Zed"', 'exec-and-forget open -a "iTerm"']
+
+# Toggle floating
+alt-shift-f = 'layout floating tiling'
+
+# Enter resize mode
+alt-r = 'mode resize'
+
+# ── Resize mode ───────────────────────────────────────────────────────
+
+[mode.resize.binding]
+left = 'resize width -50'
+right = 'resize width +50'
+up = 'resize height -50'
+down = 'resize height +50'
+b = 'balance-sizes'
+esc = 'mode main'
+enter = 'mode main'
+
+# ── Window rules ──────────────────────────────────────────────────────
+# Auto-assign apps to workspaces when windows are detected
+
+[[on-window-detected]]
+if.app-id = 'dev.zed.Zed'
+run = 'move-node-to-workspace 1'
+
+[[on-window-detected]]
+if.app-id = 'com.googlecode.iterm2'
+run = 'move-node-to-workspace 1'
+
+# Workspace 3: Communications (Slack + Spark Mail, 50/50)
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace 3'
+
+[[on-window-detected]]
+if.app-id = 'com.readdle.SparkDesktop-setapp'
+run = 'move-node-to-workspace 3'
+
+# Workspace 4: Planning (Obsidian + Linear, 50/50)
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace 4'
+
+[[on-window-detected]]
+if.app-id = 'com.linear'
+run = 'move-node-to-workspace 4'
+
+# Float system dialogs and preferences
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+# Catch-all: send everything else to workspace 5 (misc)
+[[on-window-detected]]
+if.app-name-regex-substring = '.'
+run = 'move-node-to-workspace 5'

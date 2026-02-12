@@ -57,3 +57,7 @@ ln -sf ~/dotfiles/claude/skills ~/.claude/skills
 
 # Ghostty stuff
 ln -sf ~/dotfiles/ghostty/config ~/.config/ghostty/config
+
+# AeroSpace
+mkdir -p ~/.config/aerospace
+ln -sf ~/dotfiles/aerospace/aerospace.toml ~/.config/aerospace/aerospace.toml
