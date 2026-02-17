@@ -7,32 +7,38 @@
 // from the command palette.
 [
   {
+    "context": "Editor && edit_prediction_conflict && showing_completions",
+    "bindings": {
+      "tab": "editor::AcceptEditPrediction",
+    },
+  },
+  {
     "context": "Editor && mode == full",
     "bindings": {
       "shift-alt-t": [
         "task::Spawn",
         {
-          "task_name": "test $ZED_RELATIVE_FILE:$ZED_ROW"
-        }
-      ]
-    }
+          "task_name": "test $ZED_RELATIVE_FILE:$ZED_ROW",
+        },
+      ],
+    },
   },
   {
     "context": "Editor && vim_mode == insert",
     "bindings": {
       // "j k": "vim::NormalBefore"
-    }
+    },
   },
   {
     "context": "Workspace",
     "bindings": {
-      "cmd-p": "project_symbols::Toggle"
-    }
+      "cmd-p": "project_symbols::Toggle",
+    },
   },
   {
     "context": "Workspace",
     "bindings": {
-      "cmd-t": "file_finder::Toggle"
-    }
-  }
+      "cmd-t": "file_finder::Toggle",
+    },
+  },
 ]
