@@ -2,6 +2,7 @@
 name: workflows:rfc-create
 description: Transform workflow artifacts (spec.md, research.md, plan.md) into team RFC format. Use when the user wants to create an RFC, generate an RFC, or convert project artifacts into an RFC for team review.
 allowed-tools: Read, Grep, Glob, Bash, AskUserQuestion, Write, Edit, Task
+argument-hint: "[project-folder]"
 ---
 
 # Create RFC from Workflow Artifacts
@@ -37,10 +38,10 @@ Use this mapping to transform artifact content into RFC sections. Sections marke
 | RFC Section | Primary Source | Notes |
 |---|---|---|
 | **Executive Summary*** | spec.md: Problem Statement + Goals + Approach | Concise 2-4 sentence summary of the whole RFC |
-| **Terminology** | research.md: domain-specific terms discovered | Extract any specialized terms; ask user if none found |
-| **Design Criteria** | spec.md: Requirements (Must Have + Should Have) | Convert requirements into design criteria framing |
-| **Associated Links & Alternative Approaches*** | plan.md: Alternative Approaches + References; spec.md: Approach rationale | Include links to tickets, docs, prior art |
 | **Motivation & Business Case** | spec.md: Problem Statement + Goals | Why this matters — business/user impact |
+| **Domain Model** | research.md: domain terms + spec.md: business rules | Terms, entity relationships, business rules, bounded contexts |
+| **Design Criteria** | spec.md: Requirements + plan.md: behavioral contracts, SLAs | Design constraints, key behavioral contracts, and performance expectations |
+| **Associated Links & Alternative Approaches*** | plan.md: Alternative Approaches + References; spec.md: Approach rationale | Include links to tickets, docs, prior art |
 | **Implementation Plan*** | plan.md: Phases → Milestones with cycle estimates | Each Phase becomes a Milestone |
 | **Release Plan** | plan.md: Migration Notes, phased rollout details | How this ships to users |
 | **Relevant Tech Debt** | research.md: findings about existing technical debt | Tech debt discovered during research |
@@ -61,13 +62,23 @@ After reading all available artifacts, generate the **complete RFC** in one pass
 - If the source artifact exists and contains relevant content → transform and populate the section
 - If the source artifact is missing or doesn't cover that section → leave a `<!-- NEEDS INPUT -->` marker internally (do not show to user yet)
 
-**Writing guidelines:**
+**Writing guidelines — use the L1-L4 layers as a quality lens:**
+
+Each RFC section targets a specific level of abstraction. Use these layers to ensure the right depth and audience for each section:
+
+- **L1 (Strategic — WHY):** Executive Summary, Motivation & Business Case. Write for stakeholders. Focus on the business problem, quantifiable impact, success metrics, and why now. Avoid technical details.
+- **L2 (Domain — WHAT concepts):** Domain Model. Establish shared vocabulary. Define domain concepts, business rules, entity relationships, and bounded contexts. A reader should understand the problem space without knowing anything about the implementation.
+- **L3 (Behavioral — HOW components interact):** Design Criteria. Capture key behavioral contracts, SLAs, and component interaction expectations. Should be technology-agnostic — someone could build a compatible system with different tech and still satisfy these criteria.
+- **L4 (Implementation — SPECIFICALLY how):** Implementation Plan. Concrete milestones, deliverables, and technical steps. This is where technology choices, specific files, and code-level detail belong.
+
+**General writing rules:**
 - Match the tone and depth appropriate for a team review document
 - Be specific — cite concrete files, components, and behaviors from the artifacts
 - Implementation Plan milestones should include cycle estimates if the plan has them
 - Executive Summary should stand alone — a reader should understand the full scope from it
-- Keep Terminology table entries concise: term + one-line meaning
+- Domain Model entries should be concise: term + one-line meaning, rules as clear invariants
 - Drawbacks should be honest, not dismissed
+- Don't let layers bleed — keep business rationale out of Implementation Plan, keep code out of Design Criteria
 
 ### Step 2: Identify Gaps
 
@@ -108,24 +119,32 @@ The output must follow this exact structure:
 
 [2-4 sentences covering what this is, why it matters, and the chosen approach]
 
-## Terminology
+## Motivation & Business Case
+
+- [Business or user impact justification]
+
+## Domain Model
 
 | **Term** | **Meaning** |
 | --- | --- |
 | [Term] | [Definition] |
 
+**Business Rules:**
+- [Invariant or constraint that must always hold]
+
+**Entity Relationships:**
+- [How key domain concepts relate to each other]
+
 ## Design Criteria
 
-- [Criterion derived from requirements]
+- [Design constraint or requirement]
+- [Behavioral contract: component X must do Y with Z guarantees]
+- [Performance expectation or SLA]
 
 ## Associated Links & Alternative Approaches
 
 - [Link or reference to related docs, tickets, prior art]
 - **Alternative: [Name]** — [Why it was considered and why it was rejected]
-
-## Motivation & Business Case
-
-- [Business or user impact justification]
 
 ## Implementation Plan
 
