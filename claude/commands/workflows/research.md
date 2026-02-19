@@ -30,14 +30,7 @@ When this command is invoked:
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 
-2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `~/brain/dev/projects/`
-   - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (spec: yes/no, research: yes/no)
-     - [folder-2] (spec: yes/no, research: yes/no)
-     - Start fresh research (no project folder)
-
-3. **If no folders or user wants fresh research**: Ask the user what they'd like to research using **AskUserQuestion tool** with open-ended options if the topic is unclear, or proceed directly if the argument contained a research question.
+2. **If no argument provided**: Ask the user what they'd like to research using **AskUserQuestion tool** with open-ended options if the topic is unclear.
 
 Then wait for the user's research query.
 
