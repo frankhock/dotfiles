@@ -56,7 +56,7 @@ ln -sf ~/dotfiles/claude/hooks ~/.claude/hooks
 ln -sf ~/dotfiles/claude/skills ~/.claude/skills
 
 # Ghostty stuff
-ln -sf ~/dotfiles/ghostty/config ~/.config/ghostty/config
+ln -sf ~/dotfiles/ghostty/config ~/.config/ghostty
 
 # AeroSpace
 mkdir -p ~/.config/aerospace

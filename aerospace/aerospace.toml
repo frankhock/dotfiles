@@ -29,6 +29,8 @@ outer.right = 8
 2 = 'secondary'
 3 = 'main'
 4 = 'secondary'
+6 = 'secondary'
+7 = 'main'
 
 # ── Main mode keybindings ─────────────────────────────────────────────
 
@@ -52,6 +54,8 @@ alt-2 = 'workspace 2'
 alt-3 = 'workspace 3'
 alt-4 = 'workspace 4'
 alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
 
 # Move window to workspace
 alt-shift-1 = 'move-node-to-workspace 1'
@@ -59,6 +63,8 @@ alt-shift-2 = 'move-node-to-workspace 2'
 alt-shift-3 = 'move-node-to-workspace 3'
 alt-shift-4 = 'move-node-to-workspace 4'
 alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-6 = 'move-node-to-workspace 6'
+alt-shift-7 = 'move-node-to-workspace 7'
 
 # Layout controls
 alt-f = 'fullscreen'
@@ -76,6 +82,9 @@ alt-p = ['flatten-workspace-tree', 'layout h_tiles', 'balance-sizes', 'focus lef
 
 # Launch dev workspace (Zed + iTerm, routed to workspace 1 by window rules)
 alt-shift-d = ['exec-and-forget open -a "Zed"', 'exec-and-forget open -a "iTerm"']
+
+# Toggle window between misc workspaces 6 and 7
+alt-shift-tab = 'exec-and-forget ~/dotfiles/aerospace/scripts/toggle-misc-workspace.sh'
 
 # Toggle floating
 alt-shift-f = 'layout floating tiling'
@@ -114,21 +123,22 @@ run = 'move-node-to-workspace 3'
 if.app-id = 'com.readdle.SparkDesktop-setapp'
 run = 'move-node-to-workspace 3'
 
-# Workspace 4: Planning (Obsidian + Linear, 50/50)
+# Workspace 5: Planning (Obsidian + Linear, 50/50)
 [[on-window-detected]]
 if.app-id = 'md.obsidian'
-run = 'move-node-to-workspace 4'
+run = 'move-node-to-workspace 5'
 
 [[on-window-detected]]
 if.app-id = 'com.linear'
-run = 'move-node-to-workspace 4'
+run = 'move-node-to-workspace 5'
 
 # Float system dialogs and preferences
 [[on-window-detected]]
 if.app-id = 'com.apple.systempreferences'
 run = 'layout floating'
 
-# Catch-all: send everything else to workspace 5 (misc)
+# Catch-all: send everything else to workspace 6 (misc, secondary monitor)
+# Use alt-shift-7 to move windows to workspace 7 (misc, main monitor)
 [[on-window-detected]]
 if.app-name-regex-substring = '.'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 6'
