@@ -9,7 +9,7 @@ argument-hint: "[--skip-simplify] [--skip-review] [--raw]"
 
 # Post-Implementation Pipeline: Polish
 
-You are orchestrating the factory's post-implementation pipeline. This pipeline
+You are orchestrating the rigs post-implementation pipeline. This pipeline
 takes an implementing agent's output and refines it through two sequential stages
 before presenting it to the developer.
 
@@ -54,8 +54,8 @@ Before starting the pipeline:
 
 Unless `--skip-simplify` or `--raw` was passed:
 
-1. Spawn the `factory-simplifier` sub-agent using the Task tool:
-   - **subagent_type**: `factory-simplifier`
+1. Spawn the `rig-simplifier` sub-agent using the Task tool:
+   - **subagent_type**: `rig-simplifier`
    - **prompt**: Include:
      - The base branch to diff against (usually `main`)
      - The project's test command
@@ -74,8 +74,8 @@ Unless `--skip-simplify` or `--raw` was passed:
 
 Unless `--skip-review` or `--raw` was passed:
 
-1. Spawn the `factory-reviewer` sub-agent using the Task tool:
-   - **subagent_type**: `factory-reviewer`
+1. Spawn the `rig-reviewer` sub-agent using the Task tool:
+   - **subagent_type**: `rig-reviewer`
    - **prompt**: Include:
      - The base branch to diff against
      - The project's test command
@@ -118,7 +118,7 @@ After both stages complete, present a consolidated report to the developer:
 [key patterns/suggestions from reviewer]
 
 ### Harness improvement proposals (if any)
-[actionable suggestions for improving the factory's prompts/skills/config]
+[actionable suggestions for improving the rig's prompts/skills/config]
 
 ### Codebase improvement proposals (if any)
 [refactoring opportunities and shared utility suggestions for the target repo]

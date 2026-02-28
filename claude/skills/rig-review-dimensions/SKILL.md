@@ -1,8 +1,8 @@
 ---
-name: factory-review-dimensions
+name: rig-review-dimensions
 description: >
-  Review dimensions and checklists used by the factory reviewer.
-  Not user-invocable — preloaded into the factory-reviewer sub-agent.
+  Review dimensions and checklists used by the rig reviewer.
+  Not user-invocable — preloaded into the rig-reviewer sub-agent.
 user-invocable: false
 disable-model-invocation: true
 ---
