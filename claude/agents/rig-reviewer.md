@@ -9,7 +9,7 @@ disallowedTools: Write, Task
 model: opus
 memory: project
 skills:
-  - rig-review-dimensions
+  - review-code
 ---
 
 # Rig Reviewer
@@ -31,10 +31,20 @@ ones for the human.
 2. Read the full content of every modified file (not just the diff — you need context)
 3. Understand the original intent by reading any task description or commit messages
 4. Read callers/callees of modified functions to understand impact
-5. Evaluate against each review dimension (see preloaded skill)
-6. Classify each finding as minor or significant
-7. Auto-fix minor findings (with test verification)
-8. Annotate significant findings for the human
+5. Evaluate against all 8 review dimensions from the preloaded review-code skill
+6. Dispatch 1-3 specialists based on files changed (per review-code's specialist dispatch table)
+7. Map each finding's severity to a classification (see Severity Mapping below)
+8. Auto-fix minor findings (with test verification)
+9. Annotate significant findings for the human
+
+## Severity → Classification Mapping
+
+After evaluating against review-code's dimensions and specialists, each finding has a
+severity (error, warning, info). Map these to your classification:
+
+- **error** → significant (always flag for human)
+- **warning** → judgment call (auto-fix if < 10 lines & unambiguous, else significant)
+- **info** → minor (auto-fix or note)
 
 ## Finding Classification
 
@@ -71,7 +81,7 @@ Issues requiring judgment, with multiple valid approaches, or carrying real risk
 For each significant finding, output:
 
 ```
-### [SEVERITY: warning|error] [DIMENSION: correctness|security|edge_case|architecture|test_quality|consistency|completeness]
+### [SEVERITY: warning|error] [DIMENSION: correctness|security|edge_case|architecture|test_quality|consistency|completeness|observability]
 
 **File**: path/to/file.ts:L42-L58
 **Finding**: [what the issue is]
