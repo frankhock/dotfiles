@@ -338,12 +338,12 @@ Pattern {
 
 ### 5.3 Feedback Loop
 
-Reflections are stored and aggregated. When patterns reach a threshold (configurable, default: 3 occurrences of the same pattern), the rig surfaces proposals to the developer. The two suggestion types are surfaced differently:
+Reflections are stored and aggregated. When patterns reach a threshold (configurable, default: 3 occurrences of the same pattern), the autobot surfaces proposals to the developer. The two suggestion types are surfaced differently:
 
-**Harness improvement proposals** change the rig itself — prompts, CLAUDE.md, skills, agent config:
+**Harness improvement proposals** change the autobot itself — prompts, CLAUDE.md, skills, agent config:
 
 ```
-Rig: I've noticed a recurring pattern across 4 recent tasks:
+Autobot: I've noticed a recurring pattern across 4 recent tasks:
 
   "Implementing agent consistently over-abstracts in the payments module,
    creating single-use helpers that the simplifier then inlines."
@@ -360,14 +360,14 @@ Rig: I've noticed a recurring pattern across 4 recent tasks:
 **Codebase improvement proposals** are refactoring opportunities in the target repo — shared utilities, code promotion, cleanup. These are surfaced as follow-up tasks rather than config changes:
 
 ```
-Rig: Across 3 recent tasks in the payments module, the same
+Autobot: Across 3 recent tasks in the payments module, the same
   Math.round(dollars * 100) pattern appears. Consider queuing a
   cleanup task to extract a shared dollarsToCents utility.
 
   [Queue Task] [Dismiss]
 ```
 
-The developer approves, modifies, or dismisses. The rig learns either way.
+The developer approves, modifies, or dismisses. The autobot learns either way.
 
 ---
 
@@ -375,7 +375,7 @@ The developer approves, modifies, or dismisses. The rig learns either way.
 
 ### 6.1 Per-Repository Config
 
-Stored in `.rigs/pipeline.yaml` at the repo root (or in the factory's own config if we don't want to pollute the repo):
+Stored in `.autobots/pipeline.yaml` at the repo root (or in the factory's own config if we don't want to pollute the repo):
 
 ```yaml
 post_implementation_pipeline:
@@ -429,7 +429,7 @@ post_implementation_pipeline:
   reflection:
     enabled: true
     pattern_threshold: 3            # occurrences before surfacing a harness improvement
-    store: ".rigs/reflections/"  # where reflections are persisted
+    store: ".autobots/reflections/"  # where reflections are persisted
 ```
 
 ### 6.2 Per-Task Overrides
@@ -438,13 +438,13 @@ A developer can override pipeline behavior when queueing a task:
 
 ```bash
 # Skip simplification (I want raw output fast)
-rig queue "fix the login bug" --skip-simplify
+autobot queue "fix the login bug" --skip-simplify
 
 # Skip review (I trust this is trivial)
-rig queue "update copyright year in footer" --skip-review
+autobot queue "update copyright year in footer" --skip-review
 
 # Skip both (just implement, I'll review myself)
-rig queue "prototype the new search API" --raw
+autobot queue "prototype the new search API" --raw
 ```
 
 Overrides are logged. If a `--skip-review` task later causes a revert, that's signal for the trust system.
@@ -474,7 +474,7 @@ The pipeline itself is measured. These metrics feed into Feature Area #8 (Observ
 
 | Metric | What it tells us |
 |---|---|
-| **Simplification change rate** | % of diffs that the simplifier modifies. High rate = implementing agents are producing rough code. Trending down = rigs are improving. |
+| **Simplification change rate** | % of diffs that the simplifier modifies. High rate = implementing agents are producing rough code. Trending down = autobots are improving. |
 | **Review pass rate** | % of diffs that pass review with no significant findings. Trending up = quality is improving. |
 | **Auto-fix rate** | % of review findings auto-fixed vs. flagged for human. High auto-fix rate = most issues are minor. |
 | **Rollback rate** | % of simplifications or auto-fixes that break tests. Should be very low. If trending up, something is wrong. |
@@ -514,8 +514,8 @@ What to build, in what order:
 
 ### Step 5: CLI integration
 - Pipeline runs automatically after task completion
-- `rig review` shows annotated output from the pipeline
-- `rig config` exposes pipeline settings
+- `autobot review` shows annotated output from the pipeline
+- `autobot config` exposes pipeline settings
 
 ### Step 6: Feedback loop
 - Pattern threshold surfacing

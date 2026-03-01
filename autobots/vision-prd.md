@@ -1,4 +1,4 @@
-# Rigs: Vision PRD
+# Autobots: Vision PRD
 
 > **Status**: Rough Draft
 > **Date**: 2026-02-27
@@ -6,9 +6,9 @@
 
 ---
 
-## What is Rigs?
+## What is Autobots?
 
-A **code factory** — a human-on-the-loop system where AI agents (rigs) do the development work and the developer steers. The name borrows from manufacturing: a "dark factory" is a facility that runs with the lights off because no humans are on the floor. The developer's role shifts from writing code to **setting direction, reviewing output, and making judgment calls**.
+A **code factory** — a human-on-the-loop system where AI agents (autobots) do the development work and the developer steers. The name borrows from manufacturing: a "dark factory" is a facility that runs with the lights off because no humans are on the floor. The developer's role shifts from writing code to **setting direction, reviewing output, and making judgment calls**.
 
 The goal: **10x a single developer's throughput** without 10x-ing their hours.
 
@@ -40,7 +40,7 @@ The goal: **10x a single developer's throughput** without 10x-ing their hours.
 
 ```
 Morning:
-  Developer reviews overnight rig output — 3 PRs ready for review,
+  Developer reviews overnight autobot output — 3 PRs ready for review,
   2 tasks blocked on architectural decisions, 1 merged automatically
   after passing all quality gates.
 
@@ -131,12 +131,12 @@ Afternoon:
 **Why**: The developer needs to control the factory, monitor progress, and intervene when needed — all from the terminal.
 
 **Features**:
-- **`rig status`** — Overview of all active workstreams, pending tasks, blocked items, and recent completions.
-- **`rig queue <task>`** — Add work to the factory's backlog. Accepts natural language, Linear issue IDs, or structured task definitions.
-- **`rig review`** — Enter review mode. Step through completed work that needs approval. Approve, reject with feedback, or request changes.
-- **`rig watch`** — Live stream of what agents are doing right now. Tail the factory's activity log.
-- **`rig config`** — Manage trust levels, guardrails, agent configurations, and integration settings.
-- **`rig pause/resume`** — Halt all work or resume. Sometimes you need the factory to stop while you think.
+- **`autobot status`** — Overview of all active workstreams, pending tasks, blocked items, and recent completions.
+- **`autobot queue <task>`** — Add work to the factory's backlog. Accepts natural language, Linear issue IDs, or structured task definitions.
+- **`autobot review`** — Enter review mode. Step through completed work that needs approval. Approve, reject with feedback, or request changes.
+- **`autobot watch`** — Live stream of what agents are doing right now. Tail the factory's activity log.
+- **`autobot config`** — Manage trust levels, guardrails, agent configurations, and integration settings.
+- **`autobot pause/resume`** — Halt all work or resume. Sometimes you need the factory to stop while you think.
 - **Notification hooks** — Configure how/when the factory gets your attention: terminal notifications, Slack, email. Tunable urgency thresholds.
 - **Session handoff** — Seamlessly pick up where the factory left off. "Show me what you were doing on the auth refactor" should give full context.
 
@@ -158,7 +158,7 @@ Afternoon:
 
 **Features**:
 - **Throughput metrics** — Tasks completed per day/week, lines of code shipped, PRs merged.
-- **Quality metrics** — Revert rate, bug rate in rig-produced code, test coverage of rig output.
+- **Quality metrics** — Revert rate, bug rate in autobot-produced code, test coverage of autobot output.
 - **Efficiency metrics** — Human time spent per task (review time), cost per task (API spend), time-to-completion.
 - **Bottleneck detection** — Where is the factory spending the most time? Where does it get stuck most often? Where does it need the most human intervention?
 - **Audit trail** — Every decision, every agent action, every human override is logged. Full traceability for compliance and debugging.
@@ -189,7 +189,7 @@ Afternoon:
 
 ## Progressive Rollout Strategy
 
-### Phase 1: Foundation (Task-Level Rig)
+### Phase 1: Foundation (Task-Level Autobot)
 - Single-agent task execution with human review of every output
 - Basic task queue and status tracking
 - Git worktree isolation
@@ -198,7 +198,7 @@ Afternoon:
 - CLI with `status`, `queue`, `review` commands
 - Post-task reflection capture (structured retros after every task)
 
-### Phase 2: Parallelism (Multi-Rig)
+### Phase 2: Parallelism (Multi-Autobot)
 - Multiple agents running concurrently on independent tasks
 - Agent specialization (implementation vs. testing vs. review)
 - Dependency-aware scheduling
@@ -234,7 +234,7 @@ Afternoon:
 | Metric | Target |
 |--------|--------|
 | Developer throughput multiplier | 5-10x measured by tasks completed per week |
-| Human time per rig-produced PR | < 15 minutes average review time |
+| Human time per autobot-produced PR | < 15 minutes average review time |
 | Factory-produced code revert rate | < 5% (on par with or better than human-produced code) |
 | Time from task intake to merged PR | < 4 hours for task-level, < 24 hours for feature-level |
 | Developer satisfaction | "I can't imagine going back" — qualitative |
