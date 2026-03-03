@@ -14,6 +14,10 @@ if [ -f ~/.functions.sh ]; then
     source ~/.functions.sh
 fi
 
+if [ -f ~/.env ]; then
+    source ~/.env
+fi
+
 source /opt/homebrew/share/zsh/site-functions
 
 # Shell history search
