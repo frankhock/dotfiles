@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git merge-base:*), Bash(git remote:*), Bash(git fetch:*), Bash(gh pr create:*)
+allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git merge-base:*), Bash(git remote:*), Bash(git fetch:*), Bash(git push:*), Bash(gh pr create:*)
 description: Generate PR description and create GitHub pull request
 model: sonnet
 ---
@@ -27,8 +27,9 @@ Use [shared analysis guidelines](../shared/analysis-guidelines.md) for change cl
 1. Analyze the changes and generate a PR title and description using the template from `docs/pull_request_template.md`
    - **IMPORTANT: Follow the template EXACTLY as written. Do NOT add any extra sections (e.g., "Notes", "Additional Context"), checklist items, or content beyond what the template specifies. Output only what the template asks for.**
 2. Show the proposed PR and ask "Ready to create this PR?"
-3. On confirmation, run:
+3. On confirmation, push the branch and create the PR:
    ```bash
+   git push -u origin HEAD
    gh pr create --title "YOUR_TITLE" --body "YOUR_DESCRIPTION" --base main
    ```
 4. Report the PR URL
