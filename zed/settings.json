@@ -7,6 +7,10 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "diff_view_style": "unified",
+  "git_panel": {
+    "tree_view": true
+  },
   "use_smartcase_search": true,
   "search": {
     "case_sensitive": true,
@@ -34,7 +38,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "Gruvbox Dark Hard",
+    "dark": "Tokyo Night",
   },
   "languages": {
     "Ruby": {
