@@ -1,8 +1,9 @@
 ---
-name: workflows:iterate
+name: workflow:iterate
 description: "Iterate on existing implementation plans with thorough research and updates"
 argument-hint: "[project-folder] [feedback]"
 model: opus
+disable-model-invocation: true
 ---
 
 # Iterate Implementation Plan
@@ -149,9 +150,9 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
 2. Use **AskUserQuestion tool** to ask if further adjustments are needed. **Be ready to iterate further** based on feedback.
 
 3. **Once the user is satisfied**, present next steps using **AskUserQuestion tool**:
-   - Implement plan: `/workflows:implement [folder-name]`
+   - Implement plan: `/workflow:implement [folder-name]`
    - Iterate more (continue refining)
-   - Create Ralph tasks: `/workflows:plan-ralph [folder-name]`
+   - Create Ralph tasks: `/workflow:plan-ralph [folder-name]`
    - Done for now — resume later with `/resume-project [folder-name]`
 
 ## Important Guidelines

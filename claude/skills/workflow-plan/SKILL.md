@@ -1,8 +1,9 @@
 ---
-name: workflows:plan
+name: workflow:plan
 description: "Create detailed implementation plans through interactive research and iteration"
 argument-hint: "[project-folder]"
 model: opus
+disable-model-invocation: true
 ---
 
 # Implementation Plan
@@ -14,7 +15,7 @@ You are tasked with creating detailed implementation plans through an interactiv
 When this command is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflows:plan 2025-01-27-ENG-1234-feature`):
+   - If argument provided (e.g., `/workflow:plan 2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If folder doesn't exist, inform user and stop
      - Verify `spec.md` exists
@@ -156,7 +157,7 @@ Once aligned on approach:
 
    **If the user overrides your recommendation**, briefly note the tradeoff:
    - Upgrading (e.g., Focused → Comprehensive): "This will produce a more detailed plan with risk analysis and rollback strategy. The extra detail adds planning time but reduces implementation risk."
-   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/workflows:iterate` to expand it."
+   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/workflow:iterate` to expand it."
 
 2. **Create initial plan outline**:
    ```
@@ -193,7 +194,7 @@ After structure approval:
 
 2. **Use the template for the selected tier:**
 
-   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/workflows:implement`) to see which tier was used.
+   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/workflow:implement`) to see which tier was used.
 
    **If tier is Focused:**
 
@@ -333,7 +334,7 @@ After structure approval:
 
 ## Next Steps
 
-- [ ] Implement plan: `/workflows:implement [folder-name]`
+- [ ] Implement plan: `/workflow:implement [folder-name]`
 ````
 
    **If tier is Comprehensive** (Standard template plus these additional sections):
@@ -394,9 +395,9 @@ After structure approval:
 4. **Once the user is satisfied with the plan**, present next steps using **AskUserQuestion tool**:
 
    Options to present:
-   - **Iterate on plan** — "Refine specific sections: `/workflows:iterate [folder]`"
-   - **Implement plan** — "Start building: `/workflows:implement [folder]`"
-   - **Create Ralph tasks** — "Set up autonomous execution: `/workflows:plan-ralph [folder]`"
+   - **Iterate on plan** — "Refine specific sections: `/workflow:iterate [folder]`"
+   - **Implement plan** — "Start building: `/workflow:implement [folder]`"
+   - **Create Ralph tasks** — "Set up autonomous execution: `/workflow:plan-ralph [folder]`"
    - **Done for now** — "Save and exit. Come back later with `/resume-project [folder]`"
 
    If the plan tier is **Focused**, adjust the "Create Ralph tasks" option description to note: "Better suited for Standard/Comprehensive plans"
@@ -532,7 +533,7 @@ tasks = [
 ## Example Interaction Flow
 
 ```
-User: /workflows:plan 2025-01-27-ENG-1478-parent-child-tracking
+User: /workflow:plan 2025-01-27-ENG-1478-parent-child-tracking
 Assistant: Using project folder 2025-01-27-ENG-1478-parent-child-tracking. Spec/Research artifacts found.
 
 Let me read the spec and research files completely...

@@ -1,7 +1,8 @@
 ---
-name: workflows:brainstorm
+name: workflow:brainstorm
 description: "Interactive thought partner for exploring ideas and clarifying requirements. Use before implementation to understand what you're building and why."
 argument-hint: "[feature idea or problem to explore]"
+disable-model-invocation: true
 ---
 
 # Brainstorming Ideas Into Requirements
@@ -27,14 +28,14 @@ Start by understanding the current project context, then ask questions one at a 
 - Make low-level technical decisions (framework choices, data structures, etc.)
 - Cover error handling, testing strategies, or data flow
 
-Those belong in `/workflows:plan` after codebase research.
+Those belong in `/workflow:plan` after codebase research.
 
 ## Initial Setup
 
 When this skill is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflows:brainstorm 2025-01-30-ENG-123-feature`):
+   - If argument provided (e.g., `/workflow:brainstorm 2025-01-30-ENG-123-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Read `spec.md` if exists (for resuming)
      - Inform user: "Resuming spec for project [folder-name]."
@@ -173,20 +174,20 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 [Things we need to validate during codebase research]
 
 ## Next Steps
-- [ ] Research codebase: `/workflows:research [folder-name]`
+- [ ] Research codebase: `/workflow:research [folder-name]`
 ```
 
 **Git commits:**
 - Project folder saves (`~/brain/dev/projects`): No commit (outside project repo)
 
 **After saving**, suggest the user clear context with `/clear` to free up the context window, then use **AskUserQuestion tool** to present next steps:
-- Proceed to research: `/workflows:research [folder-name]`
+- Proceed to research: `/workflow:research [folder-name]`
 - Refine spec further
 - Done for now
 
 ## Context Integration
 
-**Handoff:** After spec approval, next step is `/workflows:research [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
+**Handoff:** After spec approval, next step is `/workflow:research [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
 
 ## Key Principles
 

@@ -1,8 +1,9 @@
 ---
-name: workflows:plan-ralph
+name: workflow:plan-ralph
 description: "Create implementation plans for Ralph autonomous execution. Interactive planning with research agents, then outputs ralph-tasks.json."
 argument-hint: "[project-folder]"
 model: opus
+disable-model-invocation: true
 ---
 
 # Create Ralph Plan
@@ -14,7 +15,7 @@ Create detailed implementation plans through interactive research, then output t
 When this command is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflows:plan-ralph 2025-01-27-ENG-1234-feature`):
+   - If argument provided (e.g., `/workflow:plan-ralph 2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If folder doesn't exist, inform user and stop
      - Verify `spec.md` exists
@@ -400,7 +401,7 @@ Your assigned task details (id, title, description, acceptance criteria) are inj
 ## Example Interaction Flow
 
 ```
-User: /workflows:plan-ralph 2025-01-27-ENG-1478-task-status
+User: /workflow:plan-ralph 2025-01-27-ENG-1478-task-status
 Assistant: Using project folder 2025-01-27-ENG-1478-task-status. Spec/Research artifacts found.
 
 Let me read the spec and research files completely...

@@ -1,8 +1,9 @@
 ---
-name: workflows:research
+name: workflow:research
 description: "Research and document codebase comprehensively using parallel agents"
 argument-hint: "[project-folder or research question]"
 model: opus
+disable-model-invocation: true
 ---
 
 # Research Codebase
@@ -23,7 +24,7 @@ You are tasked with conducting comprehensive research across the codebase to ans
 When this command is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflows:research 2025-01-27-ENG-1234-feature-name`):
+   - If argument provided (e.g., `/workflow:research 2025-01-27-ENG-1234-feature-name`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If exists, read existing `research.md` for context
      - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
@@ -190,11 +191,11 @@ Then wait for the user's research query.
    - [Source title](URL) - [What was learned]
 
    ## Next Steps
-   - [ ] Create implementation plan: `/workflows:plan [folder-name]`
+   - [ ] Create implementation plan: `/workflow:plan [folder-name]`
    ```
 
 8. **After saving, present next steps using AskUserQuestion tool:**
-   - Proceed to plan: `/workflows:plan [folder-name]`
+   - Proceed to plan: `/workflow:plan [folder-name]`
    - Research more (follow-up questions)
    - Done for now — resume later with `/resume-project [folder-name]`
 

@@ -1,7 +1,8 @@
 ---
-name: workflows:implement
+name: workflow:implement
 description: "Implement technical plans from ~/brain/dev/projects with verification"
 argument-hint: "[project-folder]"
+disable-model-invocation: true
 ---
 
 # Implement Plan
@@ -91,7 +92,7 @@ Do not check off items in the manual testing steps until confirmed by the user.
 
 Once all phases are implemented and verified, present next steps using **AskUserQuestion tool**:
 - Create PR: `/pr-create`
-- Iterate on plan: `/workflows:iterate [folder-name]`
+- Iterate on plan: `/workflow:iterate [folder-name]`
 - Done for now — resume later with `/resume-project [folder-name]`
 
 ## If You Get Stuck
