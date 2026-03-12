@@ -147,9 +147,9 @@ Once aligned on approach:
    - Whether the task follows an existing pattern or introduces something new
 
    **Tier definitions:**
-   - **Focused** — Single-component changes, bug fixes, tasks following established patterns. 1-3 files, one system.
-   - **Standard** — Most features, cross-component work, moderate complexity. Multiple files, 2+ systems.
-   - **Comprehensive** — Architectural changes, new systems, high-risk or high-uncertainty work. Many files, multiple systems, migrations.
+   - **Focused** — Single-component changes, bug fixes, tasks following established patterns. 1-3 files, one system. Output: single `plan.md` file.
+   - **Standard** — Most features, cross-component work, moderate complexity. Multiple files, 2+ systems. Output: split format (`plan/index.md` + phase files).
+   - **Comprehensive** — Architectural changes, new systems, high-risk or high-uncertainty work. Many files, multiple systems, migrations. Output: split format (`plan/index.md` + phase files).
 
    Use **AskUserQuestion** to present your recommendation:
    - Option 1: Your recommended tier with "(Recommended)" label and one-sentence reasoning
@@ -181,7 +181,6 @@ Once aligned on approach:
 After structure approval:
 
 1. **Determine save location:**
-   - save to `~/brain/dev/projects/[folder]/plan.md`
 
    **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
    - YYYY-MM-DD is today's date
@@ -189,14 +188,18 @@ After structure approval:
    - description is a brief kebab-case description
 
    Examples:
-   - With ticket: `2025-01-08-ENG-1478-parent-child-tracking/plan.md`
-   - Without ticket: `2025-01-08-improve-error-handling/plan.md`
+   - With ticket: `2025-01-08-ENG-1478-parent-child-tracking`
+   - Without ticket: `2025-01-08-improve-error-handling`
+
+   **Output format by tier:**
+   - **Focused**: Single file at `~/brain/dev/projects/[folder]/plan.md`
+   - **Standard/Comprehensive**: Split format at `~/brain/dev/projects/[folder]/plan/index.md` + `plan/phases/phase-N.md`
 
 2. **Use the template for the selected tier:**
 
    The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/workflow:implement`) to see which tier was used.
 
-   **If tier is Focused:**
+   **If tier is Focused** — Single file `plan.md`:
 
 ````markdown
 # [Feature/Task Name] Implementation Plan
@@ -232,7 +235,19 @@ After structure approval:
 **Implementation Note**: After automated verification passes, pause for manual confirmation before considering this complete.
 ````
 
-   **If tier is Standard** (current default):
+   **If tier is Standard** — Split format:
+
+   First, create the directory structure:
+   ```
+   ~/brain/dev/projects/[folder]/plan/
+   ├── index.md
+   └── phases/
+       ├── phase-1.md
+       ├── phase-2.md
+       └── ...
+   ```
+
+   **`plan/index.md` template:**
 
 ````markdown
 # [Feature/Task Name] Implementation Plan
@@ -247,14 +262,14 @@ After structure approval:
 
 [What exists now, what's missing, key constraints discovered]
 
-## Desired End State
-
-[A Specification of the desired end state after this plan is complete, and how to verify it]
-
 ### Key Discoveries:
 - [Important finding with file:line reference]
 - [Pattern to follow]
 - [Constraint to work within]
+
+## Desired End State
+
+[A Specification of the desired end state after this plan is complete, and how to verify it]
 
 ## What We're NOT Doing
 
@@ -264,45 +279,13 @@ After structure approval:
 
 [High-level strategy and reasoning]
 
-## Phase 1: [Descriptive Name]
+## Phase Index
 
-### Overview
-[What this phase accomplishes]
-
-### Changes Required:
-
-#### 1. [Component/File Group]
-**File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
-
-```[language]
-// Specific code to add/modify
-```
-
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Migration applies cleanly: `make migrate`
-- [ ] Unit tests pass: `make test-component`
-- [ ] Type checking passes: `npm run typecheck`
-- [ ] Linting passes: `bin/lintbot`
-- [ ] Integration tests pass: `make test-integration`
-
-#### Manual Verification:
-- [ ] Feature works as expected when tested via UI
-- [ ] Performance is acceptable under load
-- [ ] Edge case handling verified manually
-- [ ] No regressions in related features
-
-**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-
----
-
-## Phase 2: [Descriptive Name]
-
-[Similar structure with both automated and manual success criteria...]
-
----
+| # | Phase | Status | File |
+|---|-------|--------|------|
+| 1 | [Phase Name] | not_started | phases/phase-1.md |
+| 2 | [Phase Name] | not_started | phases/phase-2.md |
+| 3 | [Phase Name] | not_started | phases/phase-3.md |
 
 ## Testing Strategy
 
@@ -337,9 +320,54 @@ After structure approval:
 - [ ] Implement plan: `/workflow:implement [folder-name]`
 ````
 
-   **If tier is Comprehensive** (Standard template plus these additional sections):
+   **Each `plan/phases/phase-N.md` template:**
 
-   Use the full Standard template above, then add these sections after "Migration Notes" and before "References":
+````markdown
+# Phase N: [Descriptive Name]
+
+## Overview
+[What this phase accomplishes and why it comes at this point in the sequence]
+
+## Dependencies
+[What must be complete before this phase. Reference prior phases if applicable.]
+
+## Changes Required:
+
+#### 1. [Component/File Group]
+**File**: `path/to/file.ext`
+**Changes**: [Summary of changes]
+
+```[language]
+// Specific code to add/modify
+```
+
+#### 2. [Component/File Group]
+**File**: `path/to/file.ext`
+**Changes**: [Summary of changes]
+
+```[language]
+// Specific code to add/modify
+```
+
+## Success Criteria:
+
+#### Automated Verification:
+- [ ] Migration applies cleanly: `make migrate`
+- [ ] Unit tests pass: `make test-component`
+- [ ] Type checking passes: `npm run typecheck`
+- [ ] Linting passes: `bin/lintbot`
+- [ ] Integration tests pass: `make test-integration`
+
+#### Manual Verification:
+- [ ] Feature works as expected when tested via UI
+- [ ] Performance is acceptable under load
+- [ ] Edge case handling verified manually
+- [ ] No regressions in related features
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
+````
+
+   **If tier is Comprehensive** — Same split format as Standard, but add these sections to `plan/index.md` after "Migration Notes" and before "References":
 
 ````markdown
 ## Alternative Approaches Considered
@@ -371,12 +399,29 @@ After structure approval:
 ### Step 5: Sync and Review
 
 1. **Present the draft plan location**:
+
+   For split format:
    ```
-   I've created the initial implementation plan at:
+   I've created the implementation plan at:
+   `~/brain/dev/projects/[folder]/plan/`
+
+   Files:
+   - `index.md` — Overview, scope, phase index, strategy
+   - `phases/phase-1.md` through `phases/phase-N.md` — Detailed implementation per phase
+
+   Please review the index and phase files. Let me know:
+   - Are the phases properly scoped?
+   - Are the success criteria specific enough?
+   - Any technical details that need adjustment?
+   - Missing edge cases or considerations?
+   ```
+
+   For Focused (single file):
+   ```
+   I've created the implementation plan at:
    `~/brain/dev/projects/[folder]/plan.md`
 
    Please review it and let me know:
-   - Are the phases properly scoped?
    - Are the success criteria specific enough?
    - Any technical details that need adjustment?
    - Missing edge cases or considerations?
@@ -385,10 +430,11 @@ After structure approval:
    Use **AskUserQuestion tool** to collect review feedback.
 
 2. **Iterate based on feedback** - be ready to:
-   - Add missing phases
+   - Add missing phases (create new phase files for split format)
    - Adjust technical approach
    - Clarify success criteria (both automated and manual)
    - Add/remove scope items
+   - Update the Phase Index table in `index.md` when adding/removing phases
 
 3. **Continue refining** until the user is satisfied
 

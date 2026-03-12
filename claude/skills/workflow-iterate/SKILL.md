@@ -17,17 +17,18 @@ When this command is invoked:
 1. **Check for project folder argument**
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
-     - Read `plan.md` from folder
+     - **Detect plan format**: check for `plan/index.md` (split format) or `plan.md` (monolithic)
+     - Read the plan (see Step 1 for format-specific loading)
      - Proceed with iteration
    - If argument is a direct plan path (legacy):
      - Read the plan at that path
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan.md from last 30 days in `~/brain/dev/projects/`
+   - Find project folders with plan/index.md or plan.md from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (plan: yes)
-     - [folder-2] (plan: yes)
+     - [folder-1] (plan: yes, format: split/monolithic)
+     - [folder-2] (plan: yes, format: split/monolithic)
      - Provide folder or plan path manually
 
 3. **Handle different input scenarios**:
@@ -52,8 +53,19 @@ When this command is invoked:
 
 ### Step 1: Read and Understand Current Plan
 
-1. **Read the existing plan file COMPLETELY**:
+1. **Read the existing plan**:
+
+   **Split format** (if `plan/index.md` exists):
+   - Read `plan/index.md` fully for overview, scope, approach, and phase status
+   - Based on the user's feedback, read only the phase files that are relevant to the requested changes
+   - If feedback is about a specific phase, read only that phase file
+   - If feedback affects overall structure, read all phase files
+
+   **Monolithic format** (if only `plan.md` exists):
    - Use the Read tool WITHOUT limit/offset parameters
+   - Read the entire plan
+
+   For both formats:
    - Understand the current structure, phases, and scope
    - Note the success criteria and implementation approach
 
@@ -112,8 +124,18 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
 ### Step 4: Update the Plan
 
 1. **Make focused, precise edits** to the existing plan:
-   - If working with project folder: edit `~/brain/dev/projects/[folder]/plan.md`
-   - If working with legacy path: edit at that path
+
+   **Split format**:
+   - Edit `plan/index.md` for changes to overview, scope, approach, or phase structure
+   - Edit individual `plan/phases/phase-N.md` files for phase-specific changes
+   - If adding a new phase, create a new phase file and add it to the Phase Index table in `index.md`
+   - If removing a phase, delete the phase file and remove it from the Phase Index table
+   - If reordering phases, renumber the phase files and update the Phase Index table
+
+   **Monolithic format**:
+   - Edit `plan.md` directly
+
+   For both formats:
    - Use the Edit tool for surgical changes
    - Maintain the existing structure unless explicitly changing it
    - Keep all file:line references accurate
@@ -124,6 +146,7 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
    - If modifying scope, update "What We're NOT Doing" section
    - If changing approach, update "Implementation Approach" section
    - Maintain the distinction between automated vs manual success criteria
+   - **Split format**: keep the Phase Index table in `index.md` in sync with actual phase files
 
 3. **Preserve quality standards**:
    - Include specific file paths and line numbers for new content
@@ -134,7 +157,11 @@ Use **AskUserQuestion tool** to get user confirmation before proceeding.
 
 1. **Present the changes made**:
    ```
-   I've updated the plan at `~/brain/dev/projects/[folder]/plan.md`
+   I've updated the plan at `~/brain/dev/projects/[folder]/plan/` (or plan.md)
+
+   Files modified:
+   - [index.md — updated Phase Index / scope / approach]
+   - [phases/phase-3.md — revised success criteria]
 
    Changes made:
    - [Specific change 1]
