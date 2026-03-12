@@ -210,9 +210,13 @@ RSpec.describe RalphLoop do
 
   describe "#sync_running_status" do
     it "marks pending tasks as running when their PID is alive" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "pending" }]
+      )
       pid = Process.spawn("sleep 60")
       tasks = [{ "id" => "t1", "status" => "pending" }]
       r = build_ralph(
+        prd_file: prd_path,
         prd: { "tasks" => tasks },
         running_pids: { "t1" => pid }
       )
@@ -222,6 +226,7 @@ RSpec.describe RalphLoop do
     ensure
       Process.kill("TERM", pid) rescue nil
       Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
     end
 
     it "does not overwrite completed status" do
@@ -374,7 +379,7 @@ RSpec.describe RalphLoop do
       # Verify prompt file was written
       written_prompt = File.join(run_dir, "t1-prompt.txt")
       expect(File.exist?(written_prompt)).to be true
-      expect(File.read(written_prompt)).to include("YOUR ASSIGNED TASK ID: t1")
+      expect(File.read(written_prompt)).to include("YOUR ASSIGNED TASK")
       expect(File.read(written_prompt)).to include("test prompt content")
 
       # Verify PID tracked
@@ -504,6 +509,550 @@ RSpec.describe RalphLoop do
     end
   end
 
+  # ─── Activity tracking ──────────────────────────────────────────
+
+  describe "#start_task activity tracking" do
+    it "populates @last_activity and @task_start_times" do
+      dir, prd_path, prompt_path = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "pending" }],
+        prompt_content: "test prompt"
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+
+      r = build_ralph(prd_file: prd_path, run_dir: run_dir, prompt_file_override: prompt_path)
+      Dir.chdir(dir) { r.send(:load_config) }
+      allow(Process).to receive(:spawn).and_return(99999)
+
+      r.send(:start_task, "t1")
+
+      expect(r.instance_variable_get(:@last_activity)["t1"]).to be_a(Time)
+      expect(r.instance_variable_get(:@task_start_times)["t1"]).to be_a(Time)
+    ensure
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  describe "#update_activity_timestamps" do
+    it "updates time when log file mtime changes" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      log_file = File.join(run_dir, "t1.log")
+      File.write(log_file, "initial")
+
+      old_time = Time.now - 60
+      r = build_ralph(
+        run_dir: run_dir,
+        running_pids: { "t1" => 99999 },
+        last_activity: { "t1" => old_time }
+      )
+
+      r.send(:update_activity_timestamps)
+
+      new_time = r.instance_variable_get(:@last_activity)["t1"]
+      expect(new_time).to be > old_time
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "does not regress time when log file is older" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      log_file = File.join(run_dir, "t1.log")
+      File.write(log_file, "initial")
+
+      future_time = Time.now + 60
+      r = build_ralph(
+        run_dir: run_dir,
+        running_pids: { "t1" => 99999 },
+        last_activity: { "t1" => future_time }
+      )
+
+      r.send(:update_activity_timestamps)
+
+      expect(r.instance_variable_get(:@last_activity)["t1"]).to eq(future_time)
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  describe "#process_finished_task activity cleanup" do
+    it "cleans up @last_activity and @task_start_times" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running" }]
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+
+      r = build_ralph(
+        prd_file: prd_path,
+        run_dir: run_dir,
+        running_pids: { "t1" => 999 },
+        last_activity: { "t1" => Time.now },
+        task_start_times: { "t1" => Time.now }
+      )
+      Dir.chdir(dir) { r.send(:load_config) }
+      r.send(:process_finished_task, "t1", 999, 0)
+
+      expect(r.instance_variable_get(:@last_activity)).not_to have_key("t1")
+      expect(r.instance_variable_get(:@task_start_times)).not_to have_key("t1")
+    ensure
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  # ─── Stale detection ────────────────────────────────────────────
+
+  describe "#check_running_tasks stale detection" do
+    it "kills process when @last_activity is older than @stale_timeout" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running" }]
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+      # Create log file so kill_stale_process can append to it
+      File.write(File.join(run_dir, "t1.log"), "")
+
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      r = build_ralph(
+        prd_file: prd_path,
+        run_dir: run_dir,
+        running_pids: { "t1" => pid },
+        process_groups: { "t1" => pid },
+        last_activity: { "t1" => Time.now - 700 },
+        task_start_times: { "t1" => Time.now - 700 },
+        stale_timeout: 600
+      )
+      Dir.chdir(dir) { r.send(:load_config) }
+
+      r.send(:check_running_tasks)
+
+      saved = JSON.parse(File.read(prd_path))
+      expect(saved["tasks"][0]["status"]).to eq("failed")
+      expect(r.instance_variable_get(:@running_pids)).to be_empty
+    ensure
+      Process.kill("KILL", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "does NOT kill process when activity is recent" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running" }]
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      r = build_ralph(
+        prd_file: prd_path,
+        run_dir: run_dir,
+        running_pids: { "t1" => pid },
+        process_groups: { "t1" => pid },
+        last_activity: { "t1" => Time.now },
+        task_start_times: { "t1" => Time.now },
+        stale_timeout: 600
+      )
+      Dir.chdir(dir) { r.send(:load_config) }
+
+      r.send(:check_running_tasks)
+
+      # Task should still be running (not reaped since sleep 60 is alive)
+      expect(r.instance_variable_get(:@running_pids)).to have_key("t1")
+    ensure
+      Process.kill("KILL", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "uses per-task staleTimeout override" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running", "staleTimeout" => 10 }]
+      )
+      run_dir = Dir.mktmpdir("ralph-run-")
+      File.write(File.join(run_dir, "t1.log"), "")
+
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      r = build_ralph(
+        prd_file: prd_path,
+        run_dir: run_dir,
+        running_pids: { "t1" => pid },
+        process_groups: { "t1" => pid },
+        last_activity: { "t1" => Time.now - 15 },
+        task_start_times: { "t1" => Time.now - 15 },
+        stale_timeout: 600  # global is 600, but task overrides to 10
+      )
+      Dir.chdir(dir) { r.send(:load_config) }
+
+      r.send(:check_running_tasks)
+
+      saved = JSON.parse(File.read(prd_path))
+      expect(saved["tasks"][0]["status"]).to eq("failed")
+    ensure
+      Process.kill("KILL", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  # ─── Cleanup improvements ─────────────────────────────────────────
+
+  describe "#cleanup improvements" do
+    it "does not call pkill" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      r = build_ralph(run_dir: run_dir, running_pids: {}, process_groups: {})
+
+      expect(r).not_to receive(:system)
+      r.send(:cleanup)
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "logs warning when tracked PID is still alive after cleanup" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      r = build_ralph(run_dir: run_dir, running_pids: { "t1" => pid }, process_groups: { "t1" => pid })
+
+      # Allow all Process.kill calls but make process_alive? always return true
+      allow(Process).to receive(:kill).and_call_original
+      allow(r).to receive(:process_alive?).with(pid).and_return(true)
+      allow(Process).to receive(:waitpid).with(pid, anything)
+
+      output = capture_stderr { r.send(:cleanup) }
+      expect(output).to include("Warning: PID #{pid}")
+    ensure
+      begin
+        Process.kill("KILL", pid)
+        Process.wait(pid)
+      rescue StandardError
+        nil
+      end
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  describe "#poll_for_exit" do
+    it "returns empty when processes exit quickly" do
+      pid = Process.spawn("true", pgroup: true)
+      Process.wait(pid)  # reap it so kill(0) raises ESRCH
+
+      result = ralph.send(:poll_for_exit, [pid], timeout: 3)
+      expect(result).to be_empty
+    end
+
+    it "returns remaining PIDs after timeout" do
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      result = ralph.send(:poll_for_exit, [pid], timeout: 0.3)
+      expect(result).to eq([pid])
+    ensure
+      Process.kill("KILL", pid) rescue nil
+      Process.wait(pid) rescue nil
+    end
+  end
+
+  # ─── JSON file locking ──────────────────────────────────────────
+
+  describe "#read_prd_locked" do
+    it "acquires shared lock and parses JSON" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "pending" }]
+      )
+      r = build_ralph(prd_file: prd_path)
+
+      result = r.send(:read_prd_locked)
+      expect(result["tasks"].length).to eq(1)
+      expect(result["tasks"][0]["id"]).to eq("t1")
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
+  describe "#write_prd_locked" do
+    it "acquires exclusive lock and writes JSON" do
+      dir, prd_path, _ = create_fixtures(tasks: [])
+      r = build_ralph(prd_file: prd_path)
+
+      new_data = { "project" => "test", "tasks" => [{ "id" => "t1", "status" => "completed" }] }
+      r.send(:write_prd_locked, new_data)
+
+      saved = JSON.parse(File.read(prd_path))
+      expect(saved["tasks"][0]["status"]).to eq("completed")
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
+  # ─── State consistency ─────────────────────────────────────────
+
+  describe "#sync_running_status persistence" do
+    it "calls save_prd when it changes status from pending to running" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "pending" }]
+      )
+      pid = Process.spawn("sleep 60")
+
+      r = build_ralph(
+        prd_file: prd_path,
+        prd: { "tasks" => [{ "id" => "t1", "status" => "pending" }] },
+        running_pids: { "t1" => pid }
+      )
+
+      r.send(:sync_running_status)
+
+      # Verify persisted to disk
+      saved = JSON.parse(File.read(prd_path))
+      expect(saved["tasks"][0]["status"]).to eq("running")
+    ensure
+      Process.kill("TERM", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
+    end
+
+    it "does NOT call save_prd when status is already running" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running" }]
+      )
+      pid = Process.spawn("sleep 60")
+
+      r = build_ralph(
+        prd_file: prd_path,
+        prd: { "tasks" => [{ "id" => "t1", "status" => "running" }] },
+        running_pids: { "t1" => pid }
+      )
+
+      expect(r).not_to receive(:save_prd)
+      r.send(:sync_running_status)
+    ensure
+      Process.kill("TERM", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(dir)
+    end
+  end
+
+  describe "#reload_prd reconciliation" do
+    it "removes task from @running_pids when on-disk status is completed" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "completed" }]
+      )
+
+      r = build_ralph(
+        prd_file: prd_path,
+        running_pids: { "t1" => 99999 },
+        process_groups: { "t1" => 99999 },
+        last_activity: { "t1" => Time.now },
+        task_start_times: { "t1" => Time.now }
+      )
+
+      r.send(:reload_prd)
+
+      expect(r.instance_variable_get(:@running_pids)).not_to have_key("t1")
+      expect(r.instance_variable_get(:@process_groups)).not_to have_key("t1")
+      expect(r.instance_variable_get(:@last_activity)).not_to have_key("t1")
+      expect(r.instance_variable_get(:@task_start_times)).not_to have_key("t1")
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it "removes task from @running_pids when task is deleted from disk" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t2", "status" => "pending" }]
+      )
+
+      r = build_ralph(
+        prd_file: prd_path,
+        running_pids: { "t1" => 99999 },
+        process_groups: { "t1" => 99999 },
+        last_activity: { "t1" => Time.now },
+        task_start_times: { "t1" => Time.now }
+      )
+
+      r.send(:reload_prd)
+
+      expect(r.instance_variable_get(:@running_pids)).not_to have_key("t1")
+      expect(r.instance_variable_get(:@process_groups)).not_to have_key("t1")
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+
+    it "keeps task in @running_pids when on-disk status is running" do
+      dir, prd_path, _ = create_fixtures(
+        tasks: [{ "id" => "t1", "status" => "running" }]
+      )
+
+      r = build_ralph(
+        prd_file: prd_path,
+        running_pids: { "t1" => 99999 },
+        process_groups: { "t1" => 99999 }
+      )
+
+      r.send(:reload_prd)
+
+      expect(r.instance_variable_get(:@running_pids)).to have_key("t1")
+    ensure
+      FileUtils.rm_rf(dir)
+    end
+  end
+
+  # ─── Signal handling ────────────────────────────────────────────
+
+  describe "#setup_signal_handlers" do
+    it "signal handler only sets @should_exit (does not call exit)" do
+      r = build_ralph
+      r.send(:setup_signal_handlers)
+
+      # Simulate what the signal handler does by sending ourselves SIGTERM
+      # If exit were called, this test process would die. Instead, only the flag is set.
+      r.instance_variable_set(:@should_exit, false)
+      Process.kill("TERM", Process.pid)
+      sleep 0.1  # give signal time to be delivered
+
+      expect(r.instance_variable_get(:@should_exit)).to be true
+    end
+  end
+
+  describe "#cleanup guard" do
+    it "prevents double execution when called twice" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      pid = Process.spawn("sleep 60", pgroup: true)
+
+      r = build_ralph(run_dir: run_dir, running_pids: { "t1" => pid }, process_groups: { "t1" => pid })
+
+      # First call should output cleanup message
+      output1 = capture_stderr { r.send(:cleanup) }
+      expect(output1).to include("Cleaning up")
+
+      # Second call should be a no-op (guard prevents re-entry)
+      output2 = capture_stderr { r.send(:cleanup) }
+      expect(output2).to eq("")
+    ensure
+      Process.kill("KILL", pid) rescue nil
+      Process.wait(pid) rescue nil
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
+  # ─── Activity parsing ─────────────────────────────────────────────
+
+  describe "#parse_task_activity" do
+    it "returns 'Starting' when log file doesn't exist" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Starting")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Starting' when log file is empty" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      File.write(File.join(run_dir, "t1.log"), "")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Starting")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Tool: Edit' for assistant turn with tool_use content" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = {
+        "type" => "assistant",
+        "message" => {
+          "content" => [
+            { "type" => "text", "text" => "Let me edit that file" },
+            { "type" => "tool_use", "name" => "Edit", "id" => "toolu_123" }
+          ]
+        }
+      }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Tool: Edit")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Writing' for assistant turn with only text content" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = {
+        "type" => "assistant",
+        "message" => {
+          "content" => [{ "type" => "text", "text" => "Here is the result..." }]
+        }
+      }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Writing")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Tool running' for user turn (tool result)" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = {
+        "type" => "user",
+        "message" => {
+          "content" => [{ "type" => "tool_result", "tool_use_id" => "toolu_123" }]
+        }
+      }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Tool running")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Starting' for system init event" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = { "type" => "system", "subtype" => "init", "session_id" => "abc" }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Starting")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Finishing' for result event" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = { "type" => "result", "subtype" => "success", "duration_ms" => 5000 }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Finishing")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "returns 'Working' for unparseable last line" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      File.write(File.join(run_dir, "t1.log"), "not valid json\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Working")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+
+    it "reads only the last line from multi-line logs" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      early = { "type" => "assistant", "message" => { "content" => [{ "type" => "tool_use", "name" => "Read" }] } }
+      late = { "type" => "assistant", "message" => { "content" => [{ "type" => "tool_use", "name" => "Bash" }] } }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(early) + "\n" + JSON.generate(late) + "\n")
+      r = build_ralph(run_dir: run_dir)
+
+      expect(r.send(:parse_task_activity, "t1")).to eq("Tool: Bash")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
+  end
+
   # ─── Rendering: task list ─────────────────────────────────────────
 
   describe "#render_task_list" do
@@ -553,6 +1102,24 @@ RSpec.describe RalphLoop do
       output = capture_stdout { r.send(:render_task_list, max_display: 2) }
       expect(output.scan(/pending/).count).to eq(2)
     end
+
+    it "includes activity string for running tasks" do
+      run_dir = Dir.mktmpdir("ralph-run-")
+      event = { "type" => "assistant", "message" => { "content" => [{ "type" => "tool_use", "name" => "Edit" }] } }
+      File.write(File.join(run_dir, "t1.log"), JSON.generate(event) + "\n")
+
+      tasks = [{ "id" => "t1", "status" => "running", "title" => "Test task" }]
+      r = build_ralph(
+        prd: { "tasks" => tasks },
+        run_dir: run_dir,
+        running_pids: { "t1" => 123 }
+      )
+
+      output = capture_stdout { r.send(:render_task_list) }
+      expect(output).to include("Tool: Edit")
+    ensure
+      FileUtils.rm_rf(run_dir)
+    end
   end
 end
 
@@ -564,4 +1131,14 @@ def capture_stdout
   $stdout.string
 ensure
   $stdout = original
+end
+
+# Helper to capture stderr
+def capture_stderr
+  original = $stderr
+  $stderr = StringIO.new
+  yield
+  $stderr.string
+ensure
+  $stderr = original
 end

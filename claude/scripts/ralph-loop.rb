@@ -44,6 +44,8 @@ class RalphLoop
     @run_dir = "/tmp/ralph-loop-#{Process.pid}"
     @running_pids = {} # task_id => pid
     @process_groups = {} # task_id => pgid (for reliable group kills)
+    @last_activity = {} # task_id => Time (last log file mtime change)
+    @task_start_times = {} # task_id => Time (when task was spawned)
     @should_exit = false
     @cleaning_up = false
   end
@@ -132,12 +134,13 @@ class RalphLoop
   end
 
   def load_config
-    @prd = JSON.parse(File.read(@prd_file))
+    @prd = read_prd_locked
 
     @max_parallel ||= @prd["maxParallel"] || 1
     @check_delay ||= @prd["checkInterval"] || 15
     @prompt_file = @prompt_file_override || @prd["promptFile"] || "ralph-prompt.md"
     @project_name = @prd["project"] || "Unknown"
+    @stale_timeout = @prd["staleTimeout"] || 600  # seconds, default 10 minutes
 
     unless File.exist?(@prompt_file)
       error "Prompt file not found: #{@prompt_file}"
@@ -153,13 +156,11 @@ class RalphLoop
   def setup_signal_handlers
     %w[INT TERM].each do |signal|
       Signal.trap(signal) do
-        # Signal handlers should be minimal — set flag and exit.
-        # exit triggers at_exit which does the actual cleanup.
         @should_exit = true
-        exit 1
       end
     end
 
+    # Safety net: if main_loop exits without explicit cleanup
     at_exit { cleanup }
   end
 
@@ -241,13 +242,16 @@ class RalphLoop
       max_title = 40
       title = title[0, max_title - 3] + "..." if title.length > max_title
 
+      activity_str = ""
       case status
       when "completed"
         status_str = colorize(:green, "completed")
         pid_str = ""
       when "running"
         pid = @running_pids[id]
+        activity = parse_task_activity(id)
         status_str = colorize(:cyan, "running")
+        activity_str = colorize(:gray, " [#{activity}]")
         pid_str = pid ? "  (PID #{pid})" : ""
       when "failed"
         status_str = colorize(:red, "failed ")
@@ -259,7 +263,7 @@ class RalphLoop
 
       log_path = File.join(@run_dir, "#{id}.log")
       id_display = hyperlink(log_path, id)
-      puts "  #{id_display}  #{status_str}  #{title}#{pid_str}"
+      puts "  #{id_display}  #{status_str}#{activity_str}  #{title}#{pid_str}"
     end
   end
 
@@ -289,6 +293,9 @@ class RalphLoop
 
       # Check on running tasks (reap finished processes)
       check_running_tasks
+
+      # Update activity timestamps from log file mtimes
+      update_activity_timestamps
 
       # Get current counts
       passed_count = count_by_status("completed")
@@ -359,10 +366,25 @@ class RalphLoop
         sleep 1
       end
     end
+
+    # Explicit cleanup when loop exits normally via @should_exit
+    cleanup
   end
 
   def reload_prd
-    @prd = JSON.parse(File.read(@prd_file))
+    @prd = read_prd_locked
+
+    # Reconcile: if a task is completed/failed on disk, stop tracking its PID
+    @running_pids.each_key do |task_id|
+      task = @prd["tasks"]&.find { |t| t["id"] == task_id }
+      if task.nil? || task["status"] == "completed" || task["status"] == "failed"
+        @running_pids.delete(task_id)
+        @process_groups.delete(task_id)
+        @last_activity.delete(task_id)
+        @task_start_times.delete(task_id)
+      end
+    end
+
     true
   rescue JSON::ParserError => e
     error "Failed to parse prd.json: #{e.message} (skipping iteration)"
@@ -370,16 +392,36 @@ class RalphLoop
   end
 
   def sync_running_status
-    # Mark tasks as "running" if we have their PID
+    changed = false
     @prd["tasks"].each do |task|
       if @running_pids.key?(task["id"]) && process_alive?(@running_pids[task["id"]])
-        task["status"] = "running" unless task["status"] == "completed" || task["status"] == "failed"
+        unless task["status"] == "completed" || task["status"] == "failed" || task["status"] == "running"
+          task["status"] = "running"
+          changed = true
+        end
       end
     end
+    save_prd if changed
   end
 
   def save_prd
-    File.write(@prd_file, JSON.pretty_generate(@prd))
+    write_prd_locked(@prd)
+  end
+
+  def read_prd_locked
+    File.open(@prd_file, File::RDONLY | File::CREAT) do |f|
+      f.flock(File::LOCK_SH)  # shared lock for reads
+      JSON.parse(f.read)
+    end
+  end
+
+  def write_prd_locked(data)
+    File.open(@prd_file, File::RDWR | File::CREAT) do |f|
+      f.flock(File::LOCK_EX)  # exclusive lock for writes
+      f.truncate(0)
+      f.rewind
+      f.write(JSON.pretty_generate(data))
+    end
   end
 
   def tasks_by_status(status_value)
@@ -404,7 +446,7 @@ class RalphLoop
 
     # Spawn claude via bash, reading prompt from file via stdin
     # pgroup: true gives the child its own process group (PGID = child PID)
-    cmd = "claude --print --dangerously-skip-permissions --model sonnet < #{prompt_file_path.shellescape}"
+    cmd = "claude --print --verbose --output-format stream-json --dangerously-skip-permissions --model sonnet < #{prompt_file_path.shellescape}"
     pid = Process.spawn(
       "/bin/bash", "-c", cmd,
       out: log_file,
@@ -414,6 +456,8 @@ class RalphLoop
 
     @running_pids[task_id] = pid
     @process_groups[task_id] = pid  # With pgroup: true, PGID == child PID
+    @task_start_times[task_id] = Time.now
+    @last_activity[task_id] = Time.now
 
     # Update status in JSON
     task = @prd["tasks"].find { |t| t["id"] == task_id }
@@ -435,6 +479,15 @@ class RalphLoop
           finished_tasks << [task_id, pid, exit_code]
           next
         end
+
+        # Process still alive — check for staleness
+        task = @prd["tasks"]&.find { |t| t["id"] == task_id }
+        task_timeout = task&.dig("staleTimeout") || @stale_timeout
+        last = @last_activity[task_id] || @task_start_times[task_id] || Time.now
+        if Time.now - last > task_timeout
+          kill_stale_process(task_id, pid, task_timeout)
+          finished_tasks << [task_id, pid, 1]
+        end
       rescue Errno::ECHILD
         finished_tasks << [task_id, pid, 0]
         next
@@ -443,6 +496,110 @@ class RalphLoop
 
     finished_tasks.each do |task_id, pid, exit_code|
       process_finished_task(task_id, pid, exit_code)
+    end
+  end
+
+  def kill_stale_process(task_id, _pid, timeout)
+    pgid = @process_groups[task_id]
+    return unless pgid
+
+    # Append message to log before killing
+    log_file = File.join(@run_dir, "#{task_id}.log")
+    File.open(log_file, "a") do |f|
+      f.puts "[ralph-loop] Killed: no activity for #{timeout} seconds"
+    end
+
+    # TERM the process group, wait up to 3s, then KILL
+    begin
+      Process.kill("-TERM", pgid)
+    rescue Errno::ESRCH, Errno::EPERM
+      return
+    end
+
+    poll_for_exit([pgid], timeout: 3)
+
+    begin
+      Process.kill("-KILL", pgid)
+    rescue Errno::ESRCH, Errno::EPERM
+      # Already dead
+    end
+  end
+
+  def poll_for_exit(pgids, timeout: 3)
+    deadline = Time.now + timeout
+    remaining = pgids.dup
+
+    while Time.now < deadline && remaining.any?
+      remaining.reject! do |pgid|
+        begin
+          Process.kill(0, pgid)
+          false  # still alive
+        rescue Errno::ESRCH
+          true   # dead
+        rescue Errno::EPERM
+          false  # can't check, assume alive
+        end
+      end
+      sleep 0.1 if remaining.any?
+    end
+
+    remaining
+  end
+
+  def update_activity_timestamps
+    @running_pids.each_key do |task_id|
+      log_file = File.join(@run_dir, "#{task_id}.log")
+      if File.exist?(log_file)
+        mtime = File.mtime(log_file)
+        @last_activity[task_id] = mtime if mtime > (@last_activity[task_id] || Time.at(0))
+      end
+    end
+  end
+
+  def parse_task_activity(task_id)
+    log_file = File.join(@run_dir, "#{task_id}.log")
+    return "Starting" unless File.exist?(log_file)
+
+    # Read last 8KB (enough for the most recent JSONL events)
+    last_line = nil
+    File.open(log_file) do |f|
+      size = f.size
+      return "Starting" if size == 0
+
+      read_size = [size, 8192].min
+      f.seek(-read_size, IO::SEEK_END)
+      chunk = f.read
+      lines = chunk.split("\n").reject(&:empty?)
+      last_line = lines.last
+    end
+
+    return "Working" unless last_line
+
+    begin
+      event = JSON.parse(last_line)
+      case event["type"]
+      when "assistant"
+        # assistant turns contain content blocks — find the last tool_use or text
+        content = event.dig("message", "content") || []
+        last_tool = content.reverse.find { |b| b["type"] == "tool_use" }
+        if last_tool
+          "Tool: #{last_tool["name"]}"
+        elsif content.any? { |b| b["type"] == "text" }
+          "Writing"
+        else
+          "Working"
+        end
+      when "user"
+        "Tool running"
+      when "result"
+        "Finishing"
+      when "system"
+        "Starting"
+      else
+        "Working"
+      end
+    rescue JSON::ParserError
+      "Working"
     end
   end
 
@@ -461,7 +618,8 @@ class RalphLoop
     # Clean up tracking
     @running_pids.delete(task_id)
     @process_groups.delete(task_id)
-
+    @last_activity.delete(task_id)
+    @task_start_times.delete(task_id)
   end
 
   def process_alive?(pid)
@@ -491,11 +649,11 @@ class RalphLoop
         end
       end
 
-      # Give processes a moment to exit gracefully
-      sleep 2
+      # Poll for exit instead of fixed sleep
+      survivors = poll_for_exit(pgids_to_kill)
 
       # Force kill any survivors
-      pgids_to_kill.each do |pgid|
+      survivors.each do |pgid|
         begin
           Process.kill("-KILL", pgid)
         rescue Errno::ESRCH, Errno::EPERM
@@ -511,13 +669,14 @@ class RalphLoop
           # Already reaped
         end
       end
-    end
 
-    # Fallback: pkill any claude --print processes we may have missed
-    # (e.g., if a child was reparented to init/launchd)
-    system("pkill -TERM -f 'claude --print' 2>/dev/null")
-    sleep 0.5
-    system("pkill -9 -f 'claude --print' 2>/dev/null")
+      # Verify no tracked PIDs are still alive
+      @running_pids.each do |task_id, pid|
+        if process_alive?(pid)
+          $stderr.puts "Warning: PID #{pid} (#{task_id}) still alive after cleanup"
+        end
+      end
+    end
 
     # Reset any "running" tasks back to "pending" so they retry on next run
     reset_running_tasks_to_pending
@@ -530,7 +689,7 @@ class RalphLoop
   def reset_running_tasks_to_pending
     return unless @prd_file && File.exist?(@prd_file)
 
-    prd = JSON.parse(File.read(@prd_file))
+    prd = read_prd_locked
     return unless prd["tasks"].is_a?(Array)
 
     changed = false
@@ -541,7 +700,7 @@ class RalphLoop
       end
     end
 
-    File.write(@prd_file, JSON.pretty_generate(prd)) if changed
+    write_prd_locked(prd) if changed
   rescue StandardError
     # Best-effort — don't let JSON errors prevent the rest of cleanup
   end
