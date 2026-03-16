@@ -1,6 +1,6 @@
 ---
 name: workflow:structure
-description: "Decompose approved design into vertical implementation slices. Produces structure.md."
+description: "Decompose approved design into vertical implementation slices. Produces structure.md. Use when the user wants to break a design into phases, plan implementation order, estimate LOC per phase, or figure out how to slice work into independently testable pieces — especially after a design conversation is complete."
 argument-hint: "[project-folder]"
 model: opus
 disable-model-invocation: true
@@ -49,6 +49,7 @@ Decompose the design into phases. Each phase should be a vertical slice — touc
 Guidelines for slicing:
 - Each phase should be independently testable with mock/stub boundaries at the edges
 - Target ~200-400 LOC per phase — flag phases that seem larger but don't hard-enforce
+- Most features decompose into 3-7 phases — fewer suggests under-decomposition, more suggests over-decomposition
 - Order phases so earlier ones reduce risk or unblock later ones
 - The first phase should be the smallest possible end-to-end proof of concept
 
@@ -92,7 +93,7 @@ Write the full structure document and present via **AskUserQuestion tool** for f
 **Touches:** [components/layers this phase affects]
 **LOC estimate:** ~XXX
 **Dependencies:** None
-**Testable via:** [how to verify this phase independently]
+**Testable via:** [how to verify this phase independently — specify mock/stub boundaries at the edges]
 **Key files:**
 - `path/to/file.ext` — [what changes]
 
