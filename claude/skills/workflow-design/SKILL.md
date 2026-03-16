@@ -1,6 +1,6 @@
 ---
 name: workflow:design
-description: "Iterative design conversation to build shared understanding before planning. Produces design.md."
+description: "Iterative design conversation to build shared understanding before planning. Produces design.md. Use when the user wants to discuss architecture, make design decisions, choose between competing approaches, or align on a technical direction before writing a plan — especially after research is complete."
 argument-hint: "[project-folder]"
 model: opus
 disable-model-invocation: true
@@ -26,7 +26,7 @@ When this skill is invoked:
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Check for `spec.md` — if missing, warn: "No spec.md found. The design conversation works best with a spec. Continue anyway?" via **AskUserQuestion tool**
      - Check for `research.md` — if missing, warn: "No research.md found. Design without research may miss codebase constraints. Continue anyway?" via **AskUserQuestion tool**
-     - Check for existing `design.md` — if exists, read it and inform user: "Resuming design for project [folder-name]."
+     - Check for existing `design.md` — if exists, read it, present the existing Design Concept and Key Decisions sections, then ask via **AskUserQuestion tool**: "Found an existing design. Want to continue refining this, or start fresh?"
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
@@ -40,10 +40,9 @@ When this skill is invoked:
 
 ## Step 1: Absorb Context
 
-1. Read `spec.md` and `research.md` fully in main context — no sub-agents for reading
+1. Read `spec.md` and `research.md` fully in main context — no sub-agents
 2. If research surfaced competing patterns, note them — Design is where we pick the winner
-3. Spawn **codebase-analyzer** and **codebase-pattern-finder** agents in parallel to gather any additional context the research may have missed
-4. Wait for agents to complete, read any newly identified files
+3. If you discover a gap in the research during the conversation, tell the human: "This seems like a gap in the research. Want to run `/workflow:research` again, or proceed with what we have?" — do not re-research here
 
 ## Step 2: Dump Understanding
 
@@ -76,11 +75,19 @@ Ask pointed questions via **AskUserQuestion tool**, one at a time. Focus on deci
 
 Each question should present 2-4 options with tradeoffs, leading with your recommendation. The human should feel "grilled" — questions should surface assumptions and force explicit decisions.
 
-**Exit condition:** Continue until the human says "that's enough" or all key decisions are made. Err on the side of asking one more question rather than one fewer.
+**Exit checklist** — you need decisions on at least these before moving to Step 4:
+- Pattern choice (which codebase patterns to follow)
+- Scope boundaries (what's in, what's explicitly out)
+- Key tradeoffs (simplicity vs. flexibility, etc.)
+- Anti-goals (what this should NOT do)
+
+Continue until the human says "that's enough" or the checklist is covered. Err on the side of asking one more question rather than one fewer.
 
 ## Step 4: Write design.md
 
-Write the design document section by section. Present each section to the user for approval via **AskUserQuestion tool** before moving to the next.
+Write the full design document in one pass — the human already made decisions during the grilling. Present the complete draft to the user via **AskUserQuestion tool** for review. Iterate if they have feedback.
+
+The Design Concept section is the highest-leverage part — downstream skills (structure, plan) will key off of it. Make it clear enough that someone unfamiliar with the project could read just that section and understand the approach.
 
 Save to `~/brain/dev/projects/[folder]/design.md` using this template:
 
