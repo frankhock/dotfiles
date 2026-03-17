@@ -72,9 +72,9 @@ Read `references/templates.md` for the template matching the selected tier, then
 ## Next Steps
 
 After the user approves, present via **AskUserQuestion tool**:
+- Create worktree: `/workflow:worktree [folder]`
 - Iterate on plan: `/workflow:iterate [folder]`
 - Implement plan: `/workflow:implement [folder]`
-- Create Ralph tasks: `/workflow:plan-ralph [folder]`
 - Done for now
 
 ## Key Guidelines
