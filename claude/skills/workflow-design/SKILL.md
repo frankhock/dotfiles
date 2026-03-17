@@ -62,18 +62,9 @@ Here's my current understanding:
 **Uncertainties:** [What you're not sure about — be explicit]
 ```
 
-Be honest about what you don't understand. The human should read this and think "they get it" or "no, that's wrong because..." — both outcomes are valuable.
-
 ## Step 3: Grill the Human
 
-Ask pointed questions via **AskUserQuestion tool**, one at a time. Focus on decisions that affect multiple downstream phases:
-
-- Pattern choices: "Research found both X and Y patterns in the codebase. Which should we follow?"
-- Boundary definitions: "Should this include Z, or is that out of scope?"
-- Tradeoffs: "We could do A (simpler, less flexible) or B (more complex, more extensible). Which matters more here?"
-- Anti-goals: "What should this explicitly NOT do?"
-
-Each question should present 2-4 options with tradeoffs, leading with your recommendation. The human should feel "grilled" — questions should surface assumptions and force explicit decisions.
+Ask pointed questions via **AskUserQuestion tool**, one at a time. Each question should present 2-4 options with tradeoffs, leading with your recommendation. The human should feel "grilled" — questions should surface assumptions and force explicit decisions.
 
 **Exit checklist** — you need decisions on at least these before moving to Step 4:
 - Pattern choice (which codebase patterns to follow)
@@ -87,7 +78,7 @@ Continue until the human says "that's enough" or the checklist is covered. Err o
 
 Write the full design document in one pass — the human already made decisions during the grilling. Present the complete draft to the user via **AskUserQuestion tool** for review. Iterate if they have feedback.
 
-The Design Concept section is the highest-leverage part — downstream skills (structure, plan) will key off of it. Make it clear enough that someone unfamiliar with the project could read just that section and understand the approach.
+The Design Concept section is the highest-leverage part — downstream skills (structure, plan) will key off of it.
 
 Save to `~/brain/dev/projects/[folder]/design.md` using this template:
 
@@ -131,11 +122,3 @@ After saving, suggest the user clear context with `/clear`, then use **AskUserQu
 - Refine design further
 - Done for now
 
-## Key Principles
-
-- **Do not outsource the thinking** — surface your understanding, let the human correct it
-- **Research surfaces facts, Design makes decisions** — never re-do research here
-- **The design concept is the highest-leverage artifact** — get it right and everything downstream flows
-- **One question at a time** — every question goes through AskUserQuestion tool
-- **Lead with your recommendation** — but present alternatives honestly
-- **Be wrong out loud** — it's better to state a wrong assumption and get corrected than to hide uncertainty
