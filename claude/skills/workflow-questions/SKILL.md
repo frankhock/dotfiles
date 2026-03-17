@@ -29,9 +29,7 @@ Those belong in `/workflow:design` after codebase research.
    - Look for folder at `~/brain/dev/projects/[argument]/`
    - Read `spec.md` if it exists (resuming)
 
-2. If no argument: find project folders from last 30 days in `~/brain/dev/projects/` and ask the user which to use, or start fresh.
-
-3. If the user's input already has clear, detailed requirements, offer to skip the interview and go straight to writing the spec.
+2. If the user's input already has clear, detailed requirements, offer to skip the interview and go straight to writing the spec.
 
 ## Interview
 
