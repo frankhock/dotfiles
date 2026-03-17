@@ -35,9 +35,13 @@ Those belong in `/workflow:design` after codebase research.
 
 Scan the repo first (CLAUDE.md, related code, recent commits) to ask informed questions.
 
-Then interview the user one question at a time until the idea is clear. Prefer multiple choice when natural alternatives exist. Push back on unnecessary requirements — YAGNI.
+Walk down each branch of the requirements tree one at a time. When an answer opens new branches or constrains later decisions, name the dependency ("that affects how we'd think about X, so let me ask about X next") and follow it before moving on. The goal is to resolve every requirements-level fork — who uses it, what triggers it, what are the boundaries, what's out of scope — without crossing into how it gets built.
 
-Stop when you have enough to write the spec, or the user says "proceed."
+One question at a time. Prefer multiple choice when natural alternatives exist. Push back on unnecessary requirements — YAGNI.
+
+Before wrapping up, do an exhaustiveness check: "Are there branches we haven't covered?" (e.g., edge-case user types, adjacent features, rollout concerns, success measurement).
+
+Stop when all branches are resolved, or the user says "proceed."
 
 ## Write the Spec
 
