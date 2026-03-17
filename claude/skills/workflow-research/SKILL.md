@@ -8,6 +8,10 @@ disable-model-invocation: true
 
 # Research Codebase
 
+## Artifacts
+- **Reads**: `spec.md` (recommended)
+- **Produces**: `research.md`
+
 You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
 
 ## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
@@ -191,32 +195,15 @@ Then wait for the user's research query.
    - [Source title](URL) - [What was learned]
 
    ## Next Steps
-   - [ ] Create implementation plan: `/workflow:plan [folder-name]`
+   - [ ] Create design: `/workflow:design [folder-name]`
    ```
 
 8. **After saving, present next steps using AskUserQuestion tool:**
-   - Proceed to plan: `/workflow:plan [folder-name]`
-   - Research more (follow-up questions)
+   - Proceed to design: `/workflow:design [folder-name]`
+   - Research more (follow-up questions) — spawn new sub-agents building on previous findings
    - Done for now — resume later with `/resume-project [folder-name]`
 
-9. **Handle follow-up questions:**
-   - If the user has follow-up questions, spawn new sub-agents as needed
-   - Build on previous findings rather than starting from scratch
-
 ## Important notes:
-- Always use parallel Task agents to maximize efficiency and minimize context usage
-- Always run fresh codebase research - never rely solely on existing documents
-- Focus on finding concrete file paths and line numbers for developer reference
+- Always run fresh codebase research — never rely solely on existing documents
 - Research documents should be self-contained with all necessary context
-- Each sub-agent prompt should be specific and focused on read-only documentation operations
-- Document cross-component connections and how systems interact
-- Include temporal context (when the research was conducted)
-- Keep the main agent focused on synthesis, not deep file reading
-- Have sub-agents document examples and usage patterns as they exist
-- **CRITICAL**: You and all sub-agents are documentarians, not evaluators
-- **REMEMBER**: Document what IS, not what SHOULD BE
-- **NO RECOMMENDATIONS**: Only describe the current state of the codebase
-- **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
-- **Critical ordering**: Follow the numbered steps exactly
-  - ALWAYS read mentioned files first before spawning sub-tasks (step 1)
-  - ALWAYS wait for all sub-agents to complete before synthesizing (step 4)
+- Keep the main agent focused on synthesis; delegate deep file reading to sub-agents
