@@ -5,37 +5,43 @@ through collaborative planning, thorough research, and verified implementation.
 
 ## Overview
 
-This plugin provides a **B-R-P-I pipeline** — four sequential stages that turn
-ideas into shipped code:
+This plugin provides a **QRSPI pipeline** — focused stages that turn ideas into
+shipped code, each producing one artifact that feeds the next:
 
 ```
-Brainstorm → Research → Plan → Implement
+Questions → Research → Design → Structure → Plan → Worktree → Implement → PR
 ```
-
-Each stage produces an artifact that feeds the next:
 
 | Stage | Command | Output | Purpose |
 |-------|---------|--------|---------|
-| **Brainstorm** | `/workflows:brainstorm` | `spec.md` | Clarify what to build and why |
-| **Research** | `/workflows:research` | `research.md` | Validate assumptions against the codebase |
-| **Plan** | `/workflows:plan` | `plan.md` | Design the implementation approach |
-| **Implement** | `/workflows:implement` | Working code | Execute the plan with verification |
+| **Questions** | `/workflow:questions` | `spec.md` | Clarify what to build and why |
+| **Research** | `/workflow:research` | `research.md` | Objective codebase facts |
+| **Design** | `/workflow:design` | `design.md` | Iterative design conversation |
+| **Structure** | `/workflow:structure` | `structure.md` | Vertical slice decomposition |
+| **Plan** | `/workflow:plan` | `plan/` | Tactical implementation steps |
+| **Worktree** | `/workflow:worktree` | branch + worktree | Isolated workspace |
+| **Implement** | `/workflow:implement` | Working code | Execute the plan with verification |
+| **PR** | `/pr-create` | Pull request | Ship it |
 
-Additional commands support iteration and autonomous execution:
+Additional commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/workflows:iterate` | Refine an existing plan based on feedback |
-| `/workflows:plan-ralph` | Create plans for autonomous parallel execution |
+| `/workflow:iterate` | Edit any workflow artifact (design, structure, plan) |
+| `/workflow:plan-ralph` | Create plans for autonomous parallel execution |
 
 All artifacts are stored in project folders under `~/brain/dev/projects`:
 
 ```
 ~/brain/dev/projects/
 └── YYYY-MM-DD-ENG-XXXX-feature-name/
-    ├── spec.md          # From brainstorm
+    ├── spec.md          # From questions
     ├── research.md      # From research
-    ├── plan.md          # From plan
+    ├── design.md        # From design
+    ├── structure.md     # From structure
+    ├── plan/            # From plan (split format)
+    │   ├── index.md
+    │   └── phases/
     ├── ralph-tasks.json # For autonomous execution (optional)
     └── ralph-prompt.md  # Shared context for Ralph (optional)
 ```
@@ -44,201 +50,85 @@ All artifacts are stored in project folders under `~/brain/dev/projects`:
 
 ## Workflow Commands
 
-### `/workflows:brainstorm` — Clarify Ideas Into Requirements
+### `/workflow:questions` — Clarify Ideas Into Requirements
 
 An interactive thought partner that turns vague ideas into clear product
-requirements through structured dialogue.
+requirements through structured dialogue. Asks one question at a time,
+YAGNI-focused.
 
-**When to use:** At the start of any non-trivial feature or change, before
-writing code or diving into the codebase.
-
-**What it does:**
-
-1. **Initial Setup** — Detects recent project folders in `~/brain/dev/projects`
-   and offers to resume an existing spec or start fresh. Pass a folder name as
-   an argument to skip detection:
-   ```
-   /workflows:brainstorm 2025-01-30-ENG-123-feature
-   ```
-
-2. **Clarity Gate** — Assesses whether your requirements are already detailed
-   enough. If so, offers to skip exploration and jump straight to writing the
-   spec.
-
-3. **Lightweight Repo Research** — Scans the codebase for patterns, conventions,
-   and existing features related to your topic. Uses findings to ask more
-   informed questions.
-
-4. **Understand the Idea** — Asks questions one at a time using multiple-choice
-   when natural alternatives exist. Explores purpose, users, constraints,
-   must-haves vs nice-to-haves, and what's out of scope.
-
-5. **Explore Approaches** — Proposes 2-3 concrete solution approaches with pros,
-   cons, and a recommendation. Prefers simpler solutions (YAGNI).
-
-6. **Present Requirements** — Writes the spec in sections of 200-300 words,
-   checking after each section whether it looks right.
-
-**Output:** `spec.md` saved to the project folder with sections for Problem
-Statement, Goals, Approach, Requirements (Must/Should/Won't Have), Success
-Criteria, Constraints, and Open Questions.
-
-**Next step:** `/workflows:research [folder-name]`
+**Output:** `spec.md` — **Next step:** `/workflow:research [folder-name]`
 
 ---
 
-### `/workflows:research` — Comprehensive Codebase Research
+### `/workflow:research` — Comprehensive Codebase Research
 
-Spawns parallel research agents to validate assumptions from the spec and
-gather implementation details from the actual codebase.
+Spawns parallel research agents to gather objective codebase facts. Surfaces
+competing patterns without picking a winner — that's Design's job. All agents
+are pure documentarians.
 
-**When to use:** After brainstorming, to ground your spec in reality before
-planning. Also useful standalone when you need deep understanding of how
-something works in the codebase.
-
-**What it does:**
-
-1. **Read Context** — Loads the spec and any files you mention. Always reads
-   complete files before spawning agents.
-
-2. **Classify Risk** — Determines research depth based on the topic:
-   - **High-risk:** Security, auth, payments, encryption, external APIs,
-     infrastructure — triggers additional web research
-   - **Standard:** Feature additions, UI changes, refactoring, bug fixes
-   - **Low-risk:** Copy changes, config tweaks, simple CRUD, docs updates
-
-3. **Spawn Parallel Agents** — Launches specialized sub-agents concurrently:
-   - **Codebase Locator** — Finds WHERE relevant code lives (files, directories,
-     entry points)
-   - **Codebase Analyzer** — Understands HOW the code works (data flow, logic,
-     patterns)
-   - **Codebase Pattern Finder** — Finds existing code examples to model after
-   - **Web Search Researcher** — Fetches external documentation and best
-     practices (high-risk topics only)
-
-4. **Synthesize Findings** — Combines all agent results into a structured
-   document with `file:line` references throughout.
-
-**Important:** All research agents are pure documentarians. They describe what
-exists without suggesting improvements or identifying problems.
-
-**Output:** `research.md` with Summary, Detailed Findings, Code References,
-Architecture Notes, External Sources (if applicable), and Next Steps.
-
-**Next step:** `/workflows:plan [folder-name]`
+**Output:** `research.md` — **Next step:** `/workflow:design [folder-name]`
 
 ---
 
-### `/workflows:plan` — Create Detailed Implementation Plans
+### `/workflow:design` — Iterative Design Conversation
 
-Interactive technical planning that combines codebase research with structured
-phasing and verification criteria.
+Builds a shared design concept through iterative grilling. Surfaces AI
+understanding so the human can correct thinking. Decides which competing
+patterns to use. The quality of this conversation predicts everything downstream.
 
-**When to use:** After research is complete, to design the implementation
-approach before writing code.
-
-**What it does:**
-
-1. **Load Context** — Reads the spec, research, and any existing plan from the
-   project folder.
-
-2. **Codebase Research** — Runs a full research pass (same parallel agents as
-   `/workflows:research`) focused on implementation concerns.
-
-3. **Classify Tier** — Selects the appropriate plan detail level:
-   - **Focused** — 1-3 files, single component, bug fixes, established patterns.
-     Minimal ceremony.
-   - **Standard** (default) — Multiple files, 2+ systems, moderate complexity.
-     Full phased plan.
-   - **Comprehensive** — Architectural changes, new systems, high-risk work,
-     migrations. Maximum detail with migration notes and performance
-     considerations.
-
-4. **Interactive Planning** — Presents the plan in stages, validating with you
-   at each step. Resolves all open questions before finalizing.
-
-**Plan structure (Standard tier):**
-
-```
-# [Feature Name] Implementation Plan
-├── Overview
-├── Current State Analysis
-├── Desired End State + Key Discoveries
-├── What We're NOT Doing
-├── Implementation Approach
-├── Phase 1-N
-│   ├── Overview
-│   ├── Changes Required (with file:line references)
-│   └── Success Criteria
-│       ├── Automated (tests, linting, type checks)
-│       └── Manual (visual verification, user flows)
-├── Testing Strategy
-├── Performance Considerations (Comprehensive tier)
-├── Migration Notes (Comprehensive tier)
-└── References
-```
-
-**Output:** `plan.md` saved to the project folder.
-
-**Next step:** `/workflows:implement [folder-name]` or
-`/workflows:plan-ralph [folder-name]`
+**Output:** `design.md` — **Next step:** `/workflow:structure [folder-name]`
 
 ---
 
-### `/workflows:implement` — Execute Plans With Verification
+### `/workflow:structure` — Vertical Slice Decomposition
 
-Implements an approved plan phase by phase, running automated checks and
-pausing for manual verification between phases.
+Decomposes the approved design into independently testable vertical slices.
+Each phase touches all layers (db → services → api → frontend) with LOC budgets
+of 200-400 lines.
 
-**When to use:** After a plan is approved, to execute it with guardrails.
-
-**What it does:**
-
-1. **Load Plan** — Reads the full plan and creates a task list to track
-   progress.
-
-2. **Execute Phases** — Works through each phase sequentially:
-   - Makes the code changes described in the plan
-   - Adapts to real codebase conditions while maintaining plan intent
-   - Updates plan checkboxes as work completes
-
-3. **Verify After Each Phase:**
-   - Runs automated success criteria (tests, linting, type checks)
-   - Reports results and pauses
-   - Asks you to perform manual testing
-   - Only proceeds to the next phase after you confirm
-
-4. **Handle Mismatches** — When the codebase doesn't match the plan's
-   assumptions, communicates clearly and proposes adjustments rather than
-   silently deviating.
-
-**Output:** Working code with all plan checkboxes completed.
+**Output:** `structure.md` — **Next step:** `/workflow:plan [folder-name]`
 
 ---
 
-### `/workflows:iterate` — Refine Existing Plans
+### `/workflow:plan` — Write Tactical Plan
 
-Makes targeted updates to an existing plan based on feedback, without
-rewriting from scratch.
+Mechanical plan writing — takes approved design + structure, writes tactical
+plan files with file-level changes and success criteria. No discovery, no
+design discussion.
 
-**When to use:** When a plan needs adjustments — scope changes, new
-requirements, feedback from review, or discoveries during implementation.
-
-**What it does:**
-
-1. **Read Existing Plan** — Loads the complete current plan.
-2. **Understand Changes** — Confirms what you want to change and why.
-3. **Research If Needed** — Only spawns agents if changes require new technical
-   understanding.
-4. **Surgical Edits** — Makes focused changes while preserving the rest of the
-   plan. Maintains quality standards and resolves any new open questions.
-5. **Show Changes** — Presents what changed and offers further adjustments.
-
-**Output:** Updated `plan.md` in the project folder.
+**Output:** `plan/` directory — **Next step:** `/workflow:worktree [folder-name]` or `/workflow:implement [folder-name]`
 
 ---
 
-### `/workflows:plan-ralph` — Plans for Autonomous Execution
+### `/workflow:worktree` — Create Implementation Worktree
+
+Creates an isolated git worktree for implementation — a clean workspace on
+its own branch. Runs workspace setup automatically.
+
+**Output:** branch + worktree — **Next step:** `/workflow:implement [folder-name]`
+
+---
+
+### `/workflow:implement` — Execute Plans With Verification
+
+Implements an approved plan phase by phase, pausing for manual verification
+between phases. Reads design.md and structure.md for context alongside the plan.
+
+**Output:** Working code — **Next step:** `/pr-create`
+
+---
+
+### `/workflow:iterate` — Edit Workflow Artifacts
+
+Surgical edits to any workflow artifact (design.md, structure.md, plan/).
+Routes large changes back to the appropriate upstream skill instead of
+trying to do discovery here.
+
+**Output:** Modified artifact
+
+---
+
+### `/workflow:plan-ralph` — Plans for Autonomous Execution
 
 Creates structured task definitions for the Ralph autonomous execution engine,
 which runs multiple Claude instances in parallel.
@@ -249,7 +139,7 @@ tasks.
 
 **What it does:**
 
-Same planning process as `/workflows:plan`, but outputs two files optimized
+Same planning process as `/workflow:plan`, but outputs two files optimized
 for autonomous execution:
 
 - **`ralph-tasks.json`** — Task definitions with IDs, descriptions, and
@@ -391,7 +281,7 @@ scope, acceptance criteria, and effort estimates.
 
 The workflow commands spawn these specialized agents as parallel sub-tasks.
 They are not invoked directly — they run behind the scenes during
-`/workflows:research` and `/workflows:plan`.
+`/workflow:research` and `/workflow:plan`.
 
 | Agent | Tools | Purpose |
 |-------|-------|---------|

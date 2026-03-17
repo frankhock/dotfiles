@@ -8,168 +8,63 @@ disable-model-invocation: true
 
 # Research Codebase
 
-You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
+## Artifacts
+- **Reads**: `spec.md` (recommended)
+- **Produces**: `research.md`
 
-## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
-- DO NOT suggest improvements or changes unless the user explicitly asks for them
-- DO NOT perform root cause analysis unless the user explicitly asks for them
-- DO NOT propose future enhancements unless the user explicitly asks for them
-- DO NOT critique the implementation or identify problems
-- DO NOT recommend refactoring, optimization, or architectural changes
-- ONLY describe what exists, where it exists, how it works, and how components interact
-- You are creating a technical map/documentation of the existing system
+Spawn parallel sub-agents to research the codebase, then synthesize their findings into `research.md`.
+
+Your job is to **document what exists** — not to evaluate, critique, or suggest improvements. Describe where things are, how they work, and how they connect. When you find competing patterns or multiple approaches to the same problem, surface all of them as facts without picking a winner. `workflow:design` is where pattern decisions get made with human input.
 
 ## Initial Setup
-
-When this command is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/workflow:research 2025-01-27-ENG-1234-feature-name`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - If exists, read existing `research.md` for context
-     - Read `spec.md` if it exists (understand what to research and validate from brainstorming)
+     - Read `spec.md` if it exists
      - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
    - If no argument, proceed to step 2
 
-2. **If no argument provided**: Ask the user what they'd like to research using **AskUserQuestion tool** with open-ended options if the topic is unclear.
+2. **If no argument provided**: Ask the user what they'd like to research.
 
-Then wait for the user's research query.
+## Research Steps
 
-## Steps to follow after receiving the research query:
+1. **Read any directly mentioned files first** — read them fully in the main context before spawning sub-agents. You need this context to decompose well.
 
-1. **Read any directly mentioned files first:**
-   - If the user mentions specific files (tickets, docs, JSON), read them FULLY first
-   - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
-   - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
-   - This ensures you have full context before decomposing the research
+2. **Decompose the research question** into parallel sub-tasks. Track them with TodoWrite.
 
-2. **Analyze and decompose the research question:**
-   - Break down the user's query into composable research areas
-   - Think deeply about the underlying patterns, connections, and architectural implications the user might be seeking
-   - Identify specific components, patterns, or concepts to investigate
-   - Create a research plan using TodoWrite to track all subtasks
-   - Consider which directories, files, or architectural patterns are relevant
+3. **Classify research depth and announce it:**
 
-3. **Classify research depth based on topic risk:**
+   Security, payments, cryptography, external API integrations, and compliance topics should automatically include web research for current best practices and advisories. Standard feature work only needs codebase research. Announce your classification so the user can override ("go deeper" or "that's enough").
 
-   After decomposing the research question, classify the topic into one of three risk categories:
-
-   **High-risk keywords** (always do external research):
-   - Security, authentication, authorization
-   - Payments, billing, subscriptions
-   - Cryptography, encryption, hashing
-   - External API integrations (third-party services)
-   - Data privacy, GDPR, PII handling
-   - Infrastructure changes (DNS, CDN, load balancing)
-   - OAuth, SSO, SAML
-
-   **Standard keywords** (local research sufficient):
-   - Feature additions following existing patterns
-   - UI/frontend changes
-   - Refactoring, code reorganization
-   - Bug fixes in well-understood code
-   - Internal API changes
-
-   **Low-risk keywords** (lightweight research):
-   - Copy/text changes
-   - Config tweaks
-   - Simple additions to existing CRUD
-   - Documentation updates
-
-   **Announce the classification:**
    ```
    Research depth: [High/Standard/Low]
-   Reason: [one sentence explaining why]
+   Reason: [one sentence]
    [Proceeding with/Skipping] external research.
    ```
 
-   The user can override by saying "go deeper" or "that's enough."
+4. **Spawn parallel sub-agents:**
 
-4. **Spawn parallel sub-agent tasks for comprehensive research:**
-   - Create multiple Task agents to research different aspects concurrently
-   - Use specialized agents for specific research tasks:
+   **Codebase agents:**
+   - **codebase-locator**: find WHERE files and components live
+   - **codebase-analyzer**: understand HOW specific code works
+   - **codebase-pattern-finder**: find existing patterns and usage examples
 
-   **For codebase research:**
-   - Use the **codebase-locator** agent to find WHERE files and components live
-   - Use the **codebase-analyzer** agent to understand HOW specific code works (without critiquing it)
-   - Use the **codebase-pattern-finder** agent to find examples of existing patterns (without evaluating them)
+   **Web research** (for high-risk topics or when user asks):
+   - Spawn **web-search-researcher** agents for best practices, docs, advisories
+   - Instruct them to return source URLs — include these in `research.md` under "## External Sources"
 
-   **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
+   Start with locators to map what exists, then analyzers on the most relevant findings. Tell them what to find, not how to search.
 
-   **For web research (automatic for high-risk topics, or if user asks):**
-   - If research depth is **High**: automatically spawn **web-search-researcher** agents for:
-     - Current best practices and known pitfalls for the specific topic
-     - Framework/library documentation for the specific integration
-     - Recent security advisories or breaking changes (if applicable)
-   - If research depth is **Standard** or **Low**: skip unless user explicitly asks
-   - Instruct web-research agents to return source URLs with their findings
-   - INCLUDE those URLs in the final research.md under a "## External Sources" section
+5. **Wait for all sub-agents, then synthesize:**
+   - Connect findings across components — highlight how things interact
+   - Include specific file paths and line numbers
 
-   **For Linear tickets (if relevant):**
-   - Use the **linear-ticket-reader** agent to get full details of a specific ticket
-   - Use the **linear-searcher** agent to find related tickets or historical context
+6. **Save to project folder:**
 
-   The key is to use these agents intelligently:
-   - Start with locator agents to find what exists
-   - Then use analyzer agents on the most promising findings to document how they work
-   - Run multiple agents in parallel when they're searching for different things
-   - Each agent knows its job - just tell it what you're looking for
-   - Don't write detailed prompts about HOW to search - the agents already know
-   - Remind agents they are documenting, not evaluating or improving
+   Ask the user (via AskUserQuestion) whether to save to an existing project folder, create a new one (`~/brain/dev/projects/YYYY-MM-DD-TICKET-description/`), or skip. Write `research.md` using this format:
 
-5. **Wait for all sub-agents to complete and synthesize findings:**
-   - IMPORTANT: Wait for ALL sub-agent tasks to complete before proceeding
-   - Compile all sub-agent results
-   - Connect findings across different components
-   - Include specific file paths and line numbers for reference
-   - Highlight patterns, connections, and architectural decisions
-   - Answer the user's specific questions with concrete evidence
-
-6. **Present findings to the user:**
-   - Structure your response clearly:
-
-   ```markdown
-   # Research: [User's Question/Topic]
-
-   ## Summary
-   [High-level documentation of what was found, answering the user's question by describing what exists]
-
-   ## Detailed Findings
-
-   ### [Component/Area 1]
-   - Description of what exists ([file.ext:line](link))
-   - How it connects to other components
-   - Current implementation details (without evaluation)
-
-   ### [Component/Area 2]
-   ...
-
-   ## Code References
-   - `path/to/file.py:123` - Description of what's there
-   - `another/file.ts:45-67` - Description of the code block
-
-   ## Architecture Documentation
-   [Current patterns, conventions, and design implementations found in the codebase]
-
-   ## Open Questions
-   [Any areas that need further investigation]
-   ```
-
-7. **Offer to save research to project folder:**
-
-   Use **AskUserQuestion tool** to ask:
-   - Save to existing project folder: [list matching folders]
-   - Create new project folder (provide ticket + feature name)
-   - Skip saving
-
-   **If user provides ticket and feature name:**
-   - Create folder: `~/brain/dev/projects/YYYY-MM-DD-ENG-XXXX-feature-name/`
-   - Save to `~/brain/dev/projects/[folder]/research.md`
-
-   **If updating existing project folder:**
-   - Append new findings with timestamp separator, or replace if user confirms
-
-   **research.md format:**
    ```markdown
    # Research: [Topic]
 
@@ -177,46 +72,21 @@ Then wait for the user's research query.
    **Conducted:** YYYY-MM-DD
 
    ## Summary
-   [Research summary]
-
    ## Detailed Findings
-   [Full research output]
-
    ## Code References
-   [File paths and line numbers]
-
+   ## Competing Patterns
+   [When multiple approaches exist for the same concern, document each:
+   where it's used, how it differs, and any observable tradeoffs — without recommending one]
    ## External Sources
    [Only if web research was performed]
-   - [Source title](URL) - [What was learned]
-   - [Source title](URL) - [What was learned]
-
    ## Next Steps
-   - [ ] Create implementation plan: `/workflow:plan [folder-name]`
+   - [ ] Create design: `/workflow:design [folder-name]`
    ```
 
-8. **After saving, present next steps using AskUserQuestion tool:**
-   - Proceed to plan: `/workflow:plan [folder-name]`
-   - Research more (follow-up questions)
-   - Done for now — resume later with `/resume-project [folder-name]`
+7. **Next steps** (via AskUserQuestion):
+   - Proceed to design: `/workflow:design [folder-name]`
+   - Research more — spawn new sub-agents building on previous findings
+   - Done for now
 
-9. **Handle follow-up questions:**
-   - If the user has follow-up questions, spawn new sub-agents as needed
-   - Build on previous findings rather than starting from scratch
-
-## Important notes:
-- Always use parallel Task agents to maximize efficiency and minimize context usage
-- Always run fresh codebase research - never rely solely on existing documents
-- Focus on finding concrete file paths and line numbers for developer reference
-- Research documents should be self-contained with all necessary context
-- Each sub-agent prompt should be specific and focused on read-only documentation operations
-- Document cross-component connections and how systems interact
-- Include temporal context (when the research was conducted)
-- Keep the main agent focused on synthesis, not deep file reading
-- Have sub-agents document examples and usage patterns as they exist
-- **CRITICAL**: You and all sub-agents are documentarians, not evaluators
-- **REMEMBER**: Document what IS, not what SHOULD BE
-- **NO RECOMMENDATIONS**: Only describe the current state of the codebase
-- **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
-- **Critical ordering**: Follow the numbered steps exactly
-  - ALWAYS read mentioned files first before spawning sub-tasks (step 1)
-  - ALWAYS wait for all sub-agents to complete before synthesizing (step 4)
+## Important
+- Always run fresh codebase research — never rely solely on existing documents

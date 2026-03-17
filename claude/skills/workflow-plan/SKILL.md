@@ -1,592 +1,85 @@
 ---
 name: workflow:plan
-description: "Create detailed implementation plans through interactive research and iteration"
+description: "Write tactical implementation plan from approved design and structure. Produces plan/ directory. Use when design and structure are approved and you're ready to write the detailed plan with file-level changes, success criteria, and phase ordering."
 argument-hint: "[project-folder]"
 model: opus
 disable-model-invocation: true
 ---
 
-# Implementation Plan
+# Write Implementation Plan
 
-You are tasked with creating detailed implementation plans through an interactive, iterative process. You should be skeptical, thorough, and work collaboratively with the user to produce high-quality technical specifications.
+Take the approved `design.md` + `structure.md` and write a tactical implementation plan with file-level changes per phase. This is mechanical writing — no discovery, no design discussion. If you need to make design decisions, go back to `/workflow:design`. If you need to restructure phases, go back to `/workflow:structure`.
+
+## Artifacts
+
+- **Reads**: `design.md` (required), `structure.md` (required), `research.md` (recommended)
+- **Produces**: `plan.md` (Focused tier) or `plan/index.md` + `plan/phases/phase-N.md` (Standard/Comprehensive tier)
 
 ## Initial Setup
 
-When this command is invoked:
+When this skill is invoked:
 
 1. **Check for project folder argument**
    - If argument provided (e.g., `/workflow:plan 2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
-     - If folder doesn't exist, inform user and stop
-     - Verify `spec.md` exists
-     - If file is missing, inform user and stop
-     - Inform user: "Using project folder [name]. Spec/Research artifacts found."
+     - Check for `design.md` — if missing, warn: "No design.md found. The plan needs an approved design. Continue anyway?" via **AskUserQuestion tool**
+     - Check for `structure.md` — if missing, warn: "No structure.md found. The plan needs a structure to translate into phases. Continue anyway?" via **AskUserQuestion tool**
+     - Check for `research.md` — if present, read it for codebase context
+     - Check for existing `plan.md` or `plan/index.md` — if exists, ask via **AskUserQuestion tool**: "Found an existing plan. Want to refine this, or start fresh?"
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
    - Find folders from last 30 days in `~/brain/dev/projects/`
    - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (spec: yes/no, research: yes/no, plan: yes/no)
-     - [folder-2] (spec: yes/no, research: yes/no, plan: yes/no)
+     - [folder-1] (design: yes/no, structure: yes/no, plan: yes/no)
+     - [folder-2] (design: yes/no, structure: yes/no, plan: yes/no)
      - Provide folder name manually
 
-3. **If no folders found or user provides folder name**: Verify folder exists and has `spec.md`, then proceed.
+3. **If no folders found or user provides folder name**: Verify folder exists and proceed.
 
-## Process Steps
+## Step 1: Absorb Inputs
 
-### Step 1: Context Gathering & Initial Analysis
+1. Read `design.md`, `structure.md`, and `research.md` fully in main context
+2. Spawn `codebase-locator` agent to find exact file paths for all files mentioned in the structure
+3. Map structure phases to specific file-level changes — each structure phase becomes a plan phase
 
-1. **Read `spec.md` and `research.md` (if available) FULLY**:
-   - Inform user you're reading the files
-   - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
-   - **CRITICAL**: DO NOT spawn sub-tasks before reading these files yourself in the main context
-   - **NEVER** read files partially, read it completely
+## Step 2: Select Tier
 
-2. **Spawn initial research tasks to gather context**:
-   Before asking the user any questions, use specialized agents to research in parallel:
+Recommend a plan tier based on the structure's complexity:
 
-   - Use the **codebase-locator** agent to find all files related to the ticket/task
-   - Use the **codebase-analyzer** agent to understand how the current implementation works
+**Tier definitions:**
+- **Focused** — 1-3 files, one system, follows established patterns. Output: single `plan.md`.
+- **Standard** — Multiple files, 2+ systems. Output: split format (`plan/index.md` + phase files).
+- **Comprehensive** — Many files, multiple systems, migrations, high risk. Output: split format + Alternative Approaches, Risk Analysis, Rollback Strategy.
 
-   These agents will:
-   - Find relevant source files, configs, and tests
-   - Identify the specific directories to focus on
-   - Trace data flow and key functions
-   - Return detailed explanations with file:line references
+Use **AskUserQuestion tool** to present your recommendation with "(Recommended)" label and one-sentence reasoning. If the user overrides, briefly note the tradeoff.
 
-3. **Read all files identified by research tasks**:
-   - After research tasks complete, read ALL files they identified as relevant
-   - Read them FULLY into the main context
-   - This ensures you have complete understanding before proceeding
+## Step 3: Write Plan Files
 
-4. **Analyze and verify understanding**:
-   - Cross-reference the `spec.md` requirements with actual code
-   - Identify any discrepancies or misunderstandings
-   - Note assumptions that need verification
-   - Determine true scope based on codebase reality
+Translate each structure phase into a detailed plan phase. For each phase, specify:
+- Specific file paths and code changes
+- Success criteria split into Automated Verification and Manual Verification
+- Dependencies on prior phases
 
-5. **Present informed understanding and focused questions**:
-   ```
-   Based on the spec and my research of the codebase, I understand we need to [accurate summary].
+Read `references/templates.md` for the template matching the selected tier, then write the plan files to `~/brain/dev/projects/[folder]/plan.md` (Focused) or `plan/` (Standard/Comprehensive).
 
-   I've found that:
-   - [Current implementation detail with file:line reference]
-   - [Relevant pattern or constraint discovered]
-   - [Potential complexity or edge case identified]
+## Step 4: Review
 
-   Questions that my research couldn't answer:
-   - [Specific technical question that requires human judgment]
-   - [Business logic clarification]
-   - [Design preference that affects implementation]
-   ```
-
-   Only ask questions that you genuinely cannot answer through code investigation. Use **AskUserQuestion tool** to present each open question one at a time, with multiple-choice options where natural alternatives exist.
-
-### Step 2: Research & Discovery
-
-After getting initial clarifications:
-
-1. **If the user corrects any misunderstanding**:
-   - DO NOT just accept the correction
-   - Spawn new research tasks to verify the correct information
-   - Read the specific files/directories they mention
-   - Only proceed once you've verified the facts yourself
-
-2. **Create a research todo list** using TodoWrite to track exploration tasks
-
-3. **Spawn parallel sub-tasks for comprehensive research**:
-   - Create multiple Task agents to research different aspects concurrently
-   - Use the right agent for each type of research:
-
-   **For deeper investigation:**
-   - **codebase-locator** - To find more specific files (e.g., "find all files that handle [specific component]")
-   - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
-   - **codebase-pattern-finder** - To find similar features we can model after
-
-   Each agent knows how to:
-   - Find the right files and code patterns
-   - Identify conventions and patterns to follow
-   - Look for integration points and dependencies
-   - Return specific file:line references
-   - Find tests and examples
-
-3. **Wait for ALL sub-tasks to complete** before proceeding
-
-4. **Present findings and design options**:
-   ```
-   Based on my research, here's what I found:
-
-   **Current State:**
-   - [Key discovery about existing code]
-   - [Pattern or convention to follow]
-
-   **Design Options:**
-   1. [Option A] - [pros/cons]
-   2. [Option B] - [pros/cons]
-
-   **Open Questions:**
-   - [Technical uncertainty]
-   - [Design decision needed]
-
-   Which approach aligns best with your vision?
-   ```
-
-   Use **AskUserQuestion tool** to present design options as choices, leading with your recommendation.
-
-### Step 3: Plan Structure Development
-
-Once aligned on approach:
-
-1. **Recommend a plan tier**:
-   Based on what you learned in Steps 1-2, recommend one of three tiers:
-
-   **Signals to consider:**
-   - Number of files affected
-   - Number of systems/components touched
-   - Presence of migrations, API changes, or schema changes
-   - Whether the task follows an existing pattern or introduces something new
-
-   **Tier definitions:**
-   - **Focused** — Single-component changes, bug fixes, tasks following established patterns. 1-3 files, one system. Output: single `plan.md` file.
-   - **Standard** — Most features, cross-component work, moderate complexity. Multiple files, 2+ systems. Output: split format (`plan/index.md` + phase files).
-   - **Comprehensive** — Architectural changes, new systems, high-risk or high-uncertainty work. Many files, multiple systems, migrations. Output: split format (`plan/index.md` + phase files).
-
-   Use **AskUserQuestion** to present your recommendation:
-   - Option 1: Your recommended tier with "(Recommended)" label and one-sentence reasoning
-   - Option 2-3: The other two tiers
-
-   **If the user overrides your recommendation**, briefly note the tradeoff:
-   - Upgrading (e.g., Focused → Comprehensive): "This will produce a more detailed plan with risk analysis and rollback strategy. The extra detail adds planning time but reduces implementation risk."
-   - Downgrading (e.g., Comprehensive → Focused): "This will produce a leaner plan. If you hit unexpected complexity during implementation, you can always run `/workflow:iterate` to expand it."
-
-2. **Create initial plan outline**:
-   ```
-   Here's my proposed plan structure:
-
-   ## Overview
-   [1-2 sentence summary]
-
-   ## Implementation Phases:
-   1. [Phase name] - [what it accomplishes]
-   2. [Phase name] - [what it accomplishes]
-   3. [Phase name] - [what it accomplishes]
-
-   Does this phasing make sense? Should I adjust the order or granularity?
-   ```
-
-3. Use **AskUserQuestion tool** to **get feedback on structure** before writing details
-
-### Step 4: Detailed Plan Writing
-
-After structure approval:
-
-1. **Determine save location:**
-
-   **Folder naming format:** `YYYY-MM-DD-ENG-XXXX-description` where:
-   - YYYY-MM-DD is today's date
-   - ENG-XXXX is the ticket number (omit if no ticket)
-   - description is a brief kebab-case description
-
-   Examples:
-   - With ticket: `2025-01-08-ENG-1478-parent-child-tracking`
-   - Without ticket: `2025-01-08-improve-error-handling`
-
-   **Output format by tier:**
-   - **Focused**: Single file at `~/brain/dev/projects/[folder]/plan.md`
-   - **Standard/Comprehensive**: Split format at `~/brain/dev/projects/[folder]/plan/index.md` + `plan/phases/phase-N.md`
-
-2. **Use the template for the selected tier:**
-
-   The `**Tier:** [tier]` line in the plan header allows downstream commands (like `/workflow:implement`) to see which tier was used.
-
-   **If tier is Focused** — Single file `plan.md`:
-
-````markdown
-# [Feature/Task Name] Implementation Plan
-
-**Tier:** Focused
-
-## Overview
-
-[2-3 sentence description of what we're implementing and why]
-
-## What We're NOT Doing
-
-[Explicitly list out-of-scope items to prevent scope creep]
-
-## Changes Required:
-
-#### 1. [Component/File Group]
-**File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
-
-```[language]
-// Specific code to add/modify
-```
-
-## Success Criteria:
-
-#### Automated Verification:
-- [ ] [Relevant checks for this task]
-
-#### Manual Verification:
-- [ ] [Relevant manual checks]
-
-**Implementation Note**: After automated verification passes, pause for manual confirmation before considering this complete.
-````
-
-   **If tier is Standard** — Split format:
-
-   First, create the directory structure:
-   ```
-   ~/brain/dev/projects/[folder]/plan/
-   ├── index.md
-   └── phases/
-       ├── phase-1.md
-       ├── phase-2.md
-       └── ...
-   ```
-
-   **`plan/index.md` template:**
-
-````markdown
-# [Feature/Task Name] Implementation Plan
-
-**Tier:** Standard
-
-## Overview
-
-[Brief description of what we're implementing and why]
-
-## Current State Analysis
-
-[What exists now, what's missing, key constraints discovered]
-
-### Key Discoveries:
-- [Important finding with file:line reference]
-- [Pattern to follow]
-- [Constraint to work within]
-
-## Desired End State
-
-[A Specification of the desired end state after this plan is complete, and how to verify it]
-
-## What We're NOT Doing
-
-[Explicitly list out-of-scope items to prevent scope creep]
-
-## Implementation Approach
-
-[High-level strategy and reasoning]
-
-## Phase Index
-
-| # | Phase | Status | File |
-|---|-------|--------|------|
-| 1 | [Phase Name] | not_started | phases/phase-1.md |
-| 2 | [Phase Name] | not_started | phases/phase-2.md |
-| 3 | [Phase Name] | not_started | phases/phase-3.md |
-
-## Testing Strategy
-
-### Unit Tests:
-- [What to test]
-- [Key edge cases]
-
-### Integration Tests:
-- [End-to-end scenarios]
-
-### Manual Testing Steps:
-1. [Specific step to verify feature]
-2. [Another verification step]
-3. [Edge case to test manually]
-
-## Performance Considerations
-
-[Any performance implications or optimizations needed]
-
-## Migration Notes
-
-[If applicable, how to handle existing data/systems]
-
-## References
-
-- Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
-- Related research: `~/brain/dev/projects/research/[relevant].md`
-- Similar implementation: `[file:line]`
+1. Present plan location and file list
+2. Use **AskUserQuestion tool** to collect review feedback
+3. Iterate until the user is satisfied — adjust phases, success criteria, scope, or technical details as needed
 
 ## Next Steps
 
-- [ ] Implement plan: `/workflow:implement [folder-name]`
-````
-
-   **Each `plan/phases/phase-N.md` template:**
-
-````markdown
-# Phase N: [Descriptive Name]
-
-## Overview
-[What this phase accomplishes and why it comes at this point in the sequence]
-
-## Dependencies
-[What must be complete before this phase. Reference prior phases if applicable.]
-
-## Changes Required:
-
-#### 1. [Component/File Group]
-**File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
-
-```[language]
-// Specific code to add/modify
-```
-
-#### 2. [Component/File Group]
-**File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
-
-```[language]
-// Specific code to add/modify
-```
-
-## Success Criteria:
-
-#### Automated Verification:
-- [ ] Migration applies cleanly: `make migrate`
-- [ ] Unit tests pass: `make test-component`
-- [ ] Type checking passes: `npm run typecheck`
-- [ ] Linting passes: `bin/lintbot`
-- [ ] Integration tests pass: `make test-integration`
-
-#### Manual Verification:
-- [ ] Feature works as expected when tested via UI
-- [ ] Performance is acceptable under load
-- [ ] Edge case handling verified manually
-- [ ] No regressions in related features
-
-**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-````
-
-   **If tier is Comprehensive** — Same split format as Standard, but add these sections to `plan/index.md` after "Migration Notes" and before "References":
-
-````markdown
-## Alternative Approaches Considered
-
-### [Approach A]
-- **Description**: [What this approach would look like]
-- **Why rejected**: [Specific reason]
-
-### [Approach B]
-- **Description**: [What this approach would look like]
-- **Why rejected**: [Specific reason]
-
-## Risk Analysis
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| [Risk 1] | [Low/Med/High] | [Low/Med/High] | [Strategy] |
-| [Risk 2] | [Low/Med/High] | [Low/Med/High] | [Strategy] |
-
-## Rollback Strategy
-
-[How to safely revert these changes if something goes wrong. Include specific steps.]
-
-## Performance Considerations
-
-[Required — not optional for Comprehensive tier. Include benchmarks, expected impact, and monitoring approach.]
-````
-
-### Step 5: Sync and Review
-
-1. **Present the draft plan location**:
-
-   For split format:
-   ```
-   I've created the implementation plan at:
-   `~/brain/dev/projects/[folder]/plan/`
-
-   Files:
-   - `index.md` — Overview, scope, phase index, strategy
-   - `phases/phase-1.md` through `phases/phase-N.md` — Detailed implementation per phase
-
-   Please review the index and phase files. Let me know:
-   - Are the phases properly scoped?
-   - Are the success criteria specific enough?
-   - Any technical details that need adjustment?
-   - Missing edge cases or considerations?
-   ```
-
-   For Focused (single file):
-   ```
-   I've created the implementation plan at:
-   `~/brain/dev/projects/[folder]/plan.md`
-
-   Please review it and let me know:
-   - Are the success criteria specific enough?
-   - Any technical details that need adjustment?
-   - Missing edge cases or considerations?
-   ```
-
-   Use **AskUserQuestion tool** to collect review feedback.
-
-2. **Iterate based on feedback** - be ready to:
-   - Add missing phases (create new phase files for split format)
-   - Adjust technical approach
-   - Clarify success criteria (both automated and manual)
-   - Add/remove scope items
-   - Update the Phase Index table in `index.md` when adding/removing phases
-
-3. **Continue refining** until the user is satisfied
-
-4. **Once the user is satisfied with the plan**, present next steps using **AskUserQuestion tool**:
-
-   Options to present:
-   - **Iterate on plan** — "Refine specific sections: `/workflow:iterate [folder]`"
-   - **Implement plan** — "Start building: `/workflow:implement [folder]`"
-   - **Create Ralph tasks** — "Set up autonomous execution: `/workflow:plan-ralph [folder]`"
-   - **Done for now** — "Save and exit. Come back later with `/resume-project [folder]`"
-
-   If the plan tier is **Focused**, adjust the "Create Ralph tasks" option description to note: "Better suited for Standard/Comprehensive plans"
-
-   If the user selects "Iterate on plan", after iteration is complete, re-present this menu.
-   If the user selects "Done for now", confirm the plan location and exit.
-   For all other options, output the command string for the user to run in a fresh context.
-
-## Important Guidelines
-
-1. **Be Skeptical**:
-   - Question vague requirements
-   - Identify potential issues early
-   - Ask "why" and "what about"
-   - Don't assume - verify with code
-
-2. **Be Interactive**:
-   - Don't write the full plan in one shot
-   - Get buy-in at each major step
-   - Allow course corrections
-   - Work collaboratively
-
-3. **Be Thorough**:
-   - Read all context files COMPLETELY before planning
-   - Research actual code patterns using parallel sub-tasks
-   - Include specific file paths and line numbers
-   - Write measurable success criteria with clear automated vs manual distinction
-
-4. **Be Practical**:
-   - Focus on incremental, testable changes
-   - Consider migration and rollback
-   - Think about edge cases
-   - Include "what we're NOT doing"
-
-5. **Track Progress**:
-   - Use TodoWrite to track planning tasks
-   - Update todos as you complete research
-   - Mark planning tasks complete when done
-
-6. **No Open Questions in Final Plan**:
-   - If you encounter open questions during planning, STOP
-   - Research or ask for clarification immediately
-   - Do NOT write the plan with unresolved questions
-   - The implementation plan must be complete and actionable
-   - Every decision must be made before finalizing the plan
-
-## Success Criteria Guidelines
-
-**Always separate success criteria into two categories:**
-
-1. **Automated Verification** (can be run by execution agents):
-   - Commands that can be run: `bin/rspec`, `bin/lintbot`, etc.
-   - Specific files that should exist
-   - Code compilation/type checking
-   - Automated test suites
-
-2. **Manual Verification** (requires human testing):
-   - UI/UX functionality
-   - Performance under real conditions
-   - Edge cases that are hard to automate
-   - User acceptance criteria
-
-**Format example:**
-```markdown
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Database migration runs successfully: `bin/db-migrate`
-- [ ] Unit tests pass: `bin/rspec [changed files]`
-- [ ] No linting errors: `bin/lintbot`
-
-#### Manual Verification:
-- [ ] New feature appears correctly in the UI
-- [ ] Performance is acceptable with 1000+ items
-- [ ] Error messages are user-friendly
-- [ ] Feature works correctly on mobile devices
-```
-
-## Common Patterns
-
-### For Database Changes:
-- Start with schema/migration
-- Add store methods
-- Update business logic
-- Expose via API
-- Update clients
-
-### For New Features:
-- Research existing patterns first
-- Start with data model
-- Build backend logic
-- Add API endpoints
-- Implement UI last
-
-### For Refactoring:
-- Document current behavior
-- Plan incremental changes
-- Maintain backwards compatibility
-- Include migration strategy
-
-## Sub-task Spawning Best Practices
-
-When spawning research sub-tasks:
-
-1. **Spawn multiple tasks in parallel** for efficiency
-2. **Each task should be focused** on a specific area
-3. **Provide detailed instructions** including:
-   - Exactly what to search for
-   - Which directories to focus on
-   - What information to extract
-   - Expected output format
-4. **Be EXTREMELY specific about directories**:
-   - Include the full path context in your prompts
-5. **Specify read-only tools** to use
-6. **Request specific file:line references** in responses
-7. **Wait for all tasks to complete** before synthesizing
-8. **Verify sub-task results**:
-   - If a sub-task returns unexpected results, spawn follow-up tasks
-   - Cross-check findings against the actual codebase
-   - Don't accept results that seem incorrect
-
-Example of spawning multiple tasks:
-```python
-# Spawn these tasks concurrently:
-tasks = [
-    Task("Research database schema", db_research_prompt),
-    Task("Find API patterns", api_research_prompt),
-    Task("Investigate UI components", ui_research_prompt),
-    Task("Check test patterns", test_research_prompt)
-]
-```
-
-## Example Interaction Flow
-
-```
-User: /workflow:plan 2025-01-27-ENG-1478-parent-child-tracking
-Assistant: Using project folder 2025-01-27-ENG-1478-parent-child-tracking. Spec/Research artifacts found.
-
-Let me read the spec and research files completely...
-
-[Reads spec.md and research.md fully]
-
-Based on the spec, I understand we need to track parent-child relationships for Claude sub-task events in the hld daemon. I'm now spawning research tasks to understand the current implementation...
-
-[Interactive process continues...]
-```
+After the user approves, present via **AskUserQuestion tool**:
+- Create worktree: `/workflow:worktree [folder]`
+- Iterate on plan: `/workflow:iterate [folder]`
+- Implement plan: `/workflow:implement [folder]`
+- Done for now
+
+## Key Guidelines
+
+- **No open questions in the final plan** — if you encounter unknowns, stop and ask. The plan must be complete and actionable.
+- **Success criteria are always split** into Automated Verification (runnable commands) and Manual Verification (human checks)
+- **Do not re-research or re-design** — translate the approved design and structure into tactical steps
+- **Every interaction goes through AskUserQuestion tool**

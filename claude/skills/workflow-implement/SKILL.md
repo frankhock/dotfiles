@@ -17,6 +17,8 @@ When this command is invoked:
    - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Read `research.md` for context (understand codebase findings)
+     - Read `design.md` if it exists (understand design decisions and chosen patterns)
+     - Read `structure.md` if it exists (understand vertical slice rationale and LOC budgets)
      - **Detect plan format** (see below)
      - Proceed with implementation
    - If no argument, proceed to step 2

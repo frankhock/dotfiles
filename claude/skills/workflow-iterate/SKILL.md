@@ -1,252 +1,76 @@
 ---
 name: workflow:iterate
-description: "Iterate on existing implementation plans with thorough research and updates"
+description: "Edit existing workflow artifacts (design.md, structure.md, plan/) with surgical precision."
 argument-hint: "[project-folder] [feedback]"
 model: opus
 disable-model-invocation: true
 ---
 
-# Iterate Implementation Plan
+# Iterate on Workflow Artifacts
 
-You are tasked with updating existing implementation plans based on user feedback. You should be skeptical, thorough, and ensure changes are grounded in actual codebase reality.
+Make surgical edits to any workflow artifact. For changes that require new discovery or major design rethinking, route to the appropriate upstream skill instead of trying to do it all here.
+
+## Artifacts
+
+- **Reads**: any of `design.md`, `structure.md`, `plan/index.md`, `plan.md`
+- **Produces**: modified version of the input artifact
 
 ## Initial Setup
 
-When this command is invoked:
+When this skill is invoked:
 
 1. **Check for project folder argument**
-   - If argument matches project folder pattern (e.g., `2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `~/brain/dev/projects/[argument]/`
-     - **Detect plan format**: check for `plan/index.md` (split format) or `plan.md` (monolithic)
-     - Read the plan (see Step 1 for format-specific loading)
-     - Proceed with iteration
-   - If argument is a direct plan path (legacy):
-     - Read the plan at that path
+   - If argument provided: verify folder exists at `~/brain/dev/projects/[argument]/`
+   - Detect all artifacts present: `design.md`, `structure.md`, `plan/index.md`, `plan.md`
    - If no argument, proceed to step 2
 
 2. **Auto-detect recent project folders** (if no argument):
-   - Find project folders with plan/index.md or plan.md from last 30 days in `~/brain/dev/projects/`
+   - Find folders from last 30 days in `~/brain/dev/projects/` that contain any workflow artifact
    - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (plan: yes, format: split/monolithic)
-     - [folder-2] (plan: yes, format: split/monolithic)
-     - Provide folder or plan path manually
+     - [folder-1] (design: yes/no, structure: yes/no, plan: split/mono/no)
+     - [folder-2] (...)
+     - Provide folder name manually
 
-3. **Handle different input scenarios**:
+3. **If both folder and feedback provided**: proceed directly to Step 1. If folder but no feedback, ask via **AskUserQuestion tool** what changes the user wants to make.
 
-   **If NO plan file provided and no auto-detection matches**:
-   Use **AskUserQuestion tool** to ask which plan to update, with options for recently modified plan files if any are found.
+## Step 1: Identify Target Artifact
 
-   **If plan file provided but NO feedback**:
-   Use **AskUserQuestion tool** to ask what changes the user would like to make, with common options:
-   - Add a new phase
-   - Update success criteria
-   - Adjust scope
-   - Split/merge phases
+- Based on user feedback, determine which artifact(s) need editing
+- If unclear, ask via **AskUserQuestion tool** with detected artifacts as options
+- Read the target artifact(s) fully
 
-   Wait for user input.
+## Step 2: Assess Change Scope
 
-   **If BOTH plan file AND feedback provided**:
-   - Proceed immediately to Step 1
-   - No preliminary questions needed
+Classify the change:
 
-## Process Steps
+- **Small** (edit directly): typo fixes, adding detail, adjusting success criteria, splitting/merging phases, updating file paths, rewording sections
+- **Medium** (edit with light research): adding a new phase based on existing patterns, changing implementation approach within the same design. Spawn a targeted `codebase-locator` or `codebase-analyzer` only if you need to understand new code.
+- **Large** (route upstream): fundamental design decisions, new competing patterns to evaluate, scope changes that invalidate the design concept. Suggest the appropriate upstream skill:
+  - Design-level changes → `/workflow:design [folder]`
+  - New research needed → `/workflow:research [folder]`
+  - Structure rethink → `/workflow:structure [folder]`
 
-### Step 1: Read and Understand Current Plan
+## Step 3: Confirm Approach + Edit
 
-1. **Read the existing plan**:
+1. Present your understanding of the change and how you'll apply it via **AskUserQuestion tool**
+2. Make surgical edits using the Edit tool — precise changes, not wholesale rewrites
+3. Format-specific rules:
+   - **Plan (split format)**: keep Phase Index table in `index.md` in sync with phase files. Maintain automated/manual success criteria split.
+   - **Plan (monolithic)**: edit `plan.md` directly
+   - **Design**: update Key Decisions and Chosen Patterns sections as needed
+   - **Structure**: update LOC estimates and dependency graph as needed
 
-   **Split format** (if `plan/index.md` exists):
-   - Read `plan/index.md` fully for overview, scope, approach, and phase status
-   - Based on the user's feedback, read only the phase files that are relevant to the requested changes
-   - If feedback is about a specific phase, read only that phase file
-   - If feedback affects overall structure, read all phase files
+## Step 4: Review + Next Steps
 
-   **Monolithic format** (if only `plan.md` exists):
-   - Use the Read tool WITHOUT limit/offset parameters
-   - Read the entire plan
+1. Present the changes made (files modified, what changed)
+2. Ask if further adjustments are needed via **AskUserQuestion tool**
+3. Once satisfied, present next-steps menu via **AskUserQuestion tool**:
+   - Continue iterating
+   - Proceed to next pipeline stage (context-dependent — e.g., `/workflow:plan` after design changes, `/workflow:implement` after plan changes)
+   - Done for now
 
-   For both formats:
-   - Understand the current structure, phases, and scope
-   - Note the success criteria and implementation approach
+## Guidelines
 
-2. **Understand the requested changes**:
-   - Parse what the user wants to add/modify/remove
-   - Identify if changes require codebase research
-   - Determine scope of the update
-
-### Step 2: Research If Needed
-
-**Only spawn research tasks if the changes require new technical understanding.**
-
-If the user's feedback requires understanding new code patterns or validating assumptions:
-
-1. **Create a research todo list** using TodoWrite
-
-2. **Spawn parallel sub-tasks for research**:
-   Use the right agent for each type of research:
-
-   **For code investigation:**
-   - **codebase-locator** - To find relevant files
-   - **codebase-analyzer** - To understand implementation details
-   - **codebase-pattern-finder** - To find similar patterns
-
-   **Be EXTREMELY specific about directories**:
-   - Include full path context in prompts
-
-3. **Read any new files identified by research**:
-   - Read them FULLY into the main context
-   - Cross-reference with the plan requirements
-
-4. **Wait for ALL sub-tasks to complete** before proceeding
-
-### Step 3: Present Understanding and Approach
-
-Before making changes, confirm your understanding:
-
-```
-Based on your feedback, I understand you want to:
-- [Change 1 with specific detail]
-- [Change 2 with specific detail]
-
-My research found:
-- [Relevant code pattern or constraint]
-- [Important discovery that affects the change]
-
-I plan to update the plan by:
-1. [Specific modification to make]
-2. [Another modification]
-
-Does this align with your intent?
-```
-
-Use **AskUserQuestion tool** to get user confirmation before proceeding.
-
-### Step 4: Update the Plan
-
-1. **Make focused, precise edits** to the existing plan:
-
-   **Split format**:
-   - Edit `plan/index.md` for changes to overview, scope, approach, or phase structure
-   - Edit individual `plan/phases/phase-N.md` files for phase-specific changes
-   - If adding a new phase, create a new phase file and add it to the Phase Index table in `index.md`
-   - If removing a phase, delete the phase file and remove it from the Phase Index table
-   - If reordering phases, renumber the phase files and update the Phase Index table
-
-   **Monolithic format**:
-   - Edit `plan.md` directly
-
-   For both formats:
-   - Use the Edit tool for surgical changes
-   - Maintain the existing structure unless explicitly changing it
-   - Keep all file:line references accurate
-   - Update success criteria if needed
-
-2. **Ensure consistency**:
-   - If adding a new phase, ensure it follows the existing pattern
-   - If modifying scope, update "What We're NOT Doing" section
-   - If changing approach, update "Implementation Approach" section
-   - Maintain the distinction between automated vs manual success criteria
-   - **Split format**: keep the Phase Index table in `index.md` in sync with actual phase files
-
-3. **Preserve quality standards**:
-   - Include specific file paths and line numbers for new content
-   - Write measurable success criteria
-   - Keep language clear and actionable
-
-### Step 5: Sync and Review
-
-1. **Present the changes made**:
-   ```
-   I've updated the plan at `~/brain/dev/projects/[folder]/plan/` (or plan.md)
-
-   Files modified:
-   - [index.md — updated Phase Index / scope / approach]
-   - [phases/phase-3.md — revised success criteria]
-
-   Changes made:
-   - [Specific change 1]
-   - [Specific change 2]
-
-   The updated plan now:
-   - [Key improvement]
-   - [Another improvement]
-
-   Would you like any further adjustments?
-   ```
-
-2. Use **AskUserQuestion tool** to ask if further adjustments are needed. **Be ready to iterate further** based on feedback.
-
-3. **Once the user is satisfied**, present next steps using **AskUserQuestion tool**:
-   - Implement plan: `/workflow:implement [folder-name]`
-   - Iterate more (continue refining)
-   - Create Ralph tasks: `/workflow:plan-ralph [folder-name]`
-   - Done for now — resume later with `/resume-project [folder-name]`
-
-## Important Guidelines
-
-1. **Be Skeptical**:
-   - Don't blindly accept change requests that seem problematic
-   - Question vague feedback - ask for clarification
-   - Verify technical feasibility with code research
-   - Point out potential conflicts with existing plan phases
-
-2. **Be Surgical**:
-   - Make precise edits, not wholesale rewrites
-   - Preserve good content that doesn't need changing
-   - Only research what's necessary for the specific changes
-   - Don't over-engineer the updates
-
-3. **Be Thorough**:
-   - Read the entire existing plan before making changes
-   - Research code patterns if changes require new technical understanding
-   - Ensure updated sections maintain quality standards
-   - Verify success criteria are still measurable
-
-4. **Be Interactive**:
-   - Confirm understanding before making changes
-   - Show what you plan to change before doing it
-   - Allow course corrections
-   - Don't disappear into research without communicating
-
-5. **Track Progress**:
-   - Use TodoWrite to track update tasks if complex
-   - Update todos as you complete research
-   - Mark tasks complete when done
-
-6. **No Open Questions**:
-   - If the requested change raises questions, ASK
-   - Research or get clarification immediately
-   - Do NOT update the plan with unresolved questions
-   - Every change must be complete and actionable
-
-## Success Criteria Guidelines
-
-When updating success criteria, always maintain the two-category structure:
-
-1. **Automated Verification** (can be run by execution agents):
-   - Commands that can be run: `bin/rspec`, `bin/lintbot`, etc.
-   - Specific files that should exist
-   - Code compilation/type checking
-   - Automated test suites
-
-2. **Manual Verification** (requires human testing):
-   - UI/UX functionality
-   - Performance under real conditions
-   - Edge cases that are hard to automate
-   - User acceptance criteria
-
-## Sub-task Spawning Best Practices
-
-When spawning research sub-tasks:
-
-1. **Only spawn if truly needed** - don't research for simple changes
-2. **Spawn multiple tasks in parallel** for efficiency
-3. **Each task should be focused** on a specific area
-4. **Provide detailed instructions** including:
-   - Exactly what to search for
-   - Which directories to focus on
-   - What information to extract
-   - Expected output format
-5. **Request specific file:line references** in responses
-6. **Wait for all tasks to complete** before synthesizing
-7. **Verify sub-task results** - if something seems off, spawn follow-up tasks
+- **Be skeptical**: question vague feedback, point out conflicts with existing content, verify feasibility
+- **Be surgical**: preserve good content, only research what's necessary, don't over-engineer
+- **No open questions**: if a change raises questions, ask immediately — don't leave unresolved items in artifacts
