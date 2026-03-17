@@ -1,23 +1,27 @@
 ---
-name: workflow:brainstorm
-description: "Interactive thought partner for exploring ideas and clarifying requirements. Use before implementation to understand what you're building and why."
+name: workflow:questions
+description: "Interactive thought partner for exploring ideas and clarifying requirements. Produces spec.md."
 argument-hint: "[feature idea or problem to explore]"
 disable-model-invocation: true
 ---
 
-# Brainstorming Ideas Into Requirements
+# Turning Ideas Into Requirements
 
 ## Overview
 
-Help turn ideas into clear product requirements through natural collaborative dialogue. You are a thought partner — focus on understanding the **what** and **why**, exploring product-level approaches, and leaving detailed implementation to later stages.
+Help turn ideas into clear product requirements through natural collaborative dialogue. You are a thought partner — focus on understanding the **what** and **why**, and leaving detailed implementation to later stages.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Explore solution approaches with the user, then present the requirements in small sections, checking after each whether it looks right.
+Start by understanding the current project context, then ask questions one at a time to refine the idea. Present the requirements in small sections, checking after each whether it looks right.
+
+## Artifacts
+
+- **Reads**: user input, CLAUDE.md, git history
+- **Produces**: `spec.md`
 
 ## What This Skill Does
 
 - Clarifies the problem being solved
 - Explores user intent and goals
-- Explores product-level solution approaches with light technical framing
 - Defines requirements and constraints
 - Establishes success criteria (user-facing, not technical)
 - Identifies what's explicitly out of scope
@@ -26,16 +30,17 @@ Start by understanding the current project context, then ask questions one at a 
 
 - Design detailed implementation architecture, data models, APIs, or components
 - Make low-level technical decisions (framework choices, data structures, etc.)
+- Explore solution approaches or compare design alternatives
 - Cover error handling, testing strategies, or data flow
 
-Those belong in `/workflow:plan` after codebase research.
+Those belong in `/workflow:design` after codebase research.
 
 ## Initial Setup
 
 When this skill is invoked:
 
 1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflow:brainstorm 2025-01-30-ENG-123-feature`):
+   - If argument provided (e.g., `/workflow:questions 2025-01-30-ENG-123-feature`):
      - Verify folder exists at `~/brain/dev/projects/[argument]/`
      - Read `spec.md` if exists (for resuming)
      - Inform user: "Resuming spec for project [folder-name]."
@@ -63,7 +68,7 @@ Before diving into the full Q&A process, assess the user's input.
 **If requirements are already clear:**
 Use **AskUserQuestion tool** to offer: "Your requirements seem detailed enough to skip the exploration questions. Should I go straight to writing the spec, or would you like to explore the idea further?"
 
-If the user chooses to skip: run Phase 1 (Lightweight Repo Research) to ground the spec, then jump directly to Phase 4 (Present the Requirements), skipping Phase 2 (Understand the Idea) and Phase 3 (Explore Approaches).
+If the user chooses to skip: run Phase 1 (Lightweight Repo Research) to ground the spec, then jump directly to Phase 3 (Present the Requirements), skipping Phase 2 (Understand the Idea).
 
 **If requirements are unclear or ambiguous:** Proceed to The Process.
 
@@ -73,7 +78,7 @@ If the user chooses to skip: run Phase 1 (Lightweight Repo Research) to ground t
 
 If invoked inside a git repository, run a quick scan before asking questions:
 - Check CLAUDE.md or similar project guidance files
-- Look for features/patterns related to the brainstorm topic
+- Look for features/patterns related to the topic
 - Glance at recent relevant commits
 
 Use findings to ask more informed, context-aware questions during the dialogue. If not in a repo (or the topic is greenfield), skip this step.
@@ -100,22 +105,9 @@ Use the **AskUserQuestion tool** to ask questions **one at a time**.
 
 **Exit condition:** Continue until the idea is clear OR user says "proceed."
 
-### Phase 3: Explore Approaches
+### Phase 3: Present the Requirements
 
-Propose **2-3 concrete approaches** based on repo research and conversation.
-
-For each approach, provide:
-- Brief description (2-3 sentences)
-- Pros and cons (including light technical framing like "would require a new API endpoint" or "could extend the existing system")
-- When it's best suited
-
-Lead with your recommendation and explain why. Apply YAGNI — prefer simpler solutions.
-
-Use **AskUserQuestion tool** to ask which approach the user prefers.
-
-### Phase 4: Present the Requirements
-
-- Once you understand what they want and the chosen approach, present the requirements
+- Once you understand what they want, present the requirements
 - Break it into sections of 200-300 words
 - Use **AskUserQuestion tool** after each section to check whether it looks right so far
 - Be ready to go back and clarify if something doesn't make sense
@@ -149,9 +141,6 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 ## Goals
 [What we're trying to achieve - user-facing outcomes]
-
-## Approach
-[Chosen approach and rationale - why this over the alternatives]
 
 ## Requirements
 
@@ -187,14 +176,14 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 ## Context Integration
 
-**Handoff:** After spec approval, next step is `/workflow:research [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into planning.
+**Handoff:** After spec approval, next step is `/workflow:research [folder-name]` to validate assumptions and gather implementation details. The spec feeds into research, which feeds into design.
 
 ## Key Principles
 
 - **One question at a time** - Don't overwhelm with multiple questions
 - **Always use AskUserQuestion tool** - Every question to the user goes through the tool
 - **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **Stay in your lane** - Product-level approaches yes, implementation architecture no
+- **Stay in your lane** - Requirements yes, implementation architecture no
 - **YAGNI ruthlessly** - Push back on unnecessary requirements, prefer simpler approaches
 - **Incremental validation** - Present in sections, validate each
 - **Be flexible** - Go back and clarify when something doesn't make sense
