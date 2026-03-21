@@ -49,18 +49,14 @@ Classify the change:
   - Design-level changes → `/workflow:design [folder]`
   - New research needed → `/workflow:research [folder]`
   - Contract rethink → `/workflow:contract [folder]`
-  - Structure rethink (legacy) → `/workflow:structure [folder]`
 
 ## Step 3: Confirm Approach + Edit
 
 1. Present your understanding of the change and how you'll apply it via **AskUserQuestion tool**
 2. Make surgical edits using the Edit tool — precise changes, not wholesale rewrites
 3. Format-specific rules:
-   - **Plan (split format)**: keep Phase Index table in `index.md` in sync with phase files. Maintain automated/manual success criteria split.
-   - **Plan (monolithic)**: edit `plan.md` directly
    - **Design**: update Key Decisions and Chosen Patterns sections as needed
    - **Contract**: reordering behaviors may affect implementation sequence
-   - **Structure**: update LOC estimates and dependency graph as needed
 
 ## Step 4: Review + Next Steps
 
