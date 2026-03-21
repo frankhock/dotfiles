@@ -28,7 +28,7 @@ Before asking the user anything, spawn parallel agents to build understanding:
 - **codebase-locator**: find all files related to the spec
 - **codebase-analyzer**: understand how the current implementation works
 
-After agents complete, read ALL identified files fully into main context. Cross-reference spec requirements with actual code.
+After agents complete, read ALL identified files fully into main context. Cross-reference spec requirements with actual code. If `contract.md` exists, use its behaviors list as a starting skeleton for task decomposition.
 
 ### Step 2: Present Understanding + Focused Questions
 

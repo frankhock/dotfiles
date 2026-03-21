@@ -54,5 +54,5 @@ When this skill is invoked:
 ## Next Steps
 
 Present via **AskUserQuestion tool**:
-- Implement plan: `/workflow:implement [folder-name]` (run from `~/worktrees/[branch-name]`)
+- Implement contract: `/workflow:implement [folder-name]` (run from `~/worktrees/[branch-name]`)
 - Done for now

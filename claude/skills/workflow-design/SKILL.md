@@ -1,6 +1,6 @@
 ---
 name: workflow:design
-description: "Iterative design conversation to build shared understanding before planning. Produces design.md. Use when the user wants to discuss architecture, make design decisions, choose between competing approaches, or align on a technical direction before writing a plan — especially after research is complete."
+description: "Iterative design conversation to build shared understanding before contracting behaviors. Produces design.md. Use when the user wants to discuss architecture, make design decisions, choose between competing approaches, or align on a technical direction — especially after research is complete."
 argument-hint: "[project-folder]"
 model: opus
 disable-model-invocation: true
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Design Conversation
 
-Build a shared design concept between AI and human through iterative grilling. Frederick P. Brooks' key insight: a shared "design concept" among all collaborators predicts the quality of everything downstream more than any single artifact. The quality of this conversation determines the quality of the plan, the structure, and the code.
+Build a shared design concept between AI and human through iterative grilling. Frederick P. Brooks' key insight: a shared "design concept" among all collaborators predicts the quality of everything downstream more than any single artifact. The quality of this conversation determines the quality of the contract and the code.
 
 Your job is to surface your understanding so the human can correct your thinking — not to present a polished proposal. Show your work. Be wrong out loud. Let the human steer.
 
@@ -71,6 +71,7 @@ Ask pointed questions via **AskUserQuestion tool**, one at a time. Each question
 - Scope boundaries (what's in, what's explicitly out)
 - Key tradeoffs (simplicity vs. flexibility, etc.)
 - Anti-goals (what this should NOT do)
+- Module boundaries (where complexity lives, what the interfaces look like)
 
 Continue until the human says "that's enough" or the checklist is covered. Err on the side of asking one more question rather than one fewer.
 
@@ -78,7 +79,7 @@ Continue until the human says "that's enough" or the checklist is covered. Err o
 
 Write the full design document in one pass — the human already made decisions during the grilling. Present the complete draft to the user via **AskUserQuestion tool** for review. Iterate if they have feedback.
 
-The Design Concept section is the highest-leverage part — downstream skills (structure, plan) will key off of it.
+The Design Concept section is the highest-leverage part — downstream skills (contract, implement) will key off of it.
 
 Save to `~/brain/dev/projects/[folder]/design.md` using this template:
 
@@ -109,16 +110,16 @@ Save to `~/brain/dev/projects/[folder]/design.md` using this template:
  Where the boundaries are between this work and adjacent systems.]
 
 ## Open Risks
-[Known unknowns that structure/plan phases should account for.]
+[Known unknowns that contract/implementation should account for.]
 
 ## Next Steps
-- [ ] Create structure: `/workflow:structure [folder-name]`
+- [ ] Create contract: `/workflow:contract [folder-name]`
 ```
 
 ## Next Steps
 
 After saving, suggest the user clear context with `/clear`, then use **AskUserQuestion tool** to present:
-- Proceed to structure: `/workflow:structure [folder-name]`
+- Proceed to contract: `/workflow:contract [folder-name]`
 - Refine design further
 - Done for now
 

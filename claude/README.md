@@ -5,11 +5,11 @@ through collaborative planning, thorough research, and verified implementation.
 
 ## Overview
 
-This plugin provides a **QRSPI pipeline** — focused stages that turn ideas into
+This plugin provides a **QRDCI pipeline** — focused stages that turn ideas into
 shipped code, each producing one artifact that feeds the next:
 
 ```
-Questions → Research → Design → Structure → Plan → Worktree → Implement → PR
+Questions → Research → Design → Contract → Worktree → Implement → PR
 ```
 
 | Stage | Command | Output | Purpose |
@@ -17,17 +17,16 @@ Questions → Research → Design → Structure → Plan → Worktree → Implem
 | **Questions** | `/workflow:questions` | `spec.md` | Clarify what to build and why |
 | **Research** | `/workflow:research` | `research.md` | Objective codebase facts |
 | **Design** | `/workflow:design` | `design.md` | Iterative design conversation |
-| **Structure** | `/workflow:structure` | `structure.md` | Vertical slice decomposition |
-| **Plan** | `/workflow:plan` | `plan/` | Tactical implementation steps |
+| **Contract** | `/workflow:contract` | `contract.md` | Behavioral contracts + module boundaries |
 | **Worktree** | `/workflow:worktree` | branch + worktree | Isolated workspace |
-| **Implement** | `/workflow:implement` | Working code | Execute the plan with verification |
+| **Implement** | `/workflow:implement` | Working code | TDD tracer bullets from contract |
 | **PR** | `/pr-create` | Pull request | Ship it |
 
 Additional commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/workflow:iterate` | Edit any workflow artifact (design, structure, plan) |
+| `/workflow:iterate` | Edit any workflow artifact (design, contract, plan) |
 | `/workflow:plan-ralph` | Create plans for autonomous parallel execution |
 
 All artifacts are stored in project folders under `~/brain/dev/projects`:
@@ -38,10 +37,7 @@ All artifacts are stored in project folders under `~/brain/dev/projects`:
     ├── spec.md          # From questions
     ├── research.md      # From research
     ├── design.md        # From design
-    ├── structure.md     # From structure
-    ├── plan/            # From plan (split format)
-    │   ├── index.md
-    │   └── phases/
+    ├── contract.md      # From contract
     ├── ralph-tasks.json # For autonomous execution (optional)
     └── ralph-prompt.md  # Shared context for Ralph (optional)
 ```
@@ -76,27 +72,18 @@ Builds a shared design concept through iterative grilling. Surfaces AI
 understanding so the human can correct thinking. Decides which competing
 patterns to use. The quality of this conversation predicts everything downstream.
 
-**Output:** `design.md` — **Next step:** `/workflow:structure [folder-name]`
+**Output:** `design.md` — **Next step:** `/workflow:contract [folder-name]`
 
 ---
 
-### `/workflow:structure` — Vertical Slice Decomposition
+### `/workflow:contract` — Behavioral Contracts
 
-Decomposes the approved design into independently testable vertical slices.
-Each phase touches all layers (db → services → api → frontend) with LOC budgets
-of 200-400 lines.
+Turns the approved design into behavioral contracts: ordered behaviors (each
+becoming one TDD tracer bullet), deep module boundaries, testing decisions,
+and anti-behaviors. No file paths, no LOC, no code snippets — just what the
+system must do and must not do.
 
-**Output:** `structure.md` — **Next step:** `/workflow:plan [folder-name]`
-
----
-
-### `/workflow:plan` — Write Tactical Plan
-
-Mechanical plan writing — takes approved design + structure, writes tactical
-plan files with file-level changes and success criteria. No discovery, no
-design discussion.
-
-**Output:** `plan/` directory — **Next step:** `/workflow:worktree [folder-name]` or `/workflow:implement [folder-name]`
+**Output:** `contract.md` — **Next step:** `/workflow:worktree [folder-name]` or `/workflow:implement [folder-name]`
 
 ---
 
@@ -109,10 +96,12 @@ its own branch. Runs workspace setup automatically.
 
 ---
 
-### `/workflow:implement` — Execute Plans With Verification
+### `/workflow:implement` — TDD Tracer Bullets
 
-Implements an approved plan phase by phase, pausing for manual verification
-between phases. Reads design.md and structure.md for context alongside the plan.
+For each behavior in contract order — write one failing test (RED), implement
+minimally (GREEN), checkpoint with the human. After all behaviors pass,
+REFACTOR. Tests verify behavior through public interfaces, not implementation
+details.
 
 **Output:** Working code — **Next step:** `/pr-create`
 
@@ -120,7 +109,7 @@ between phases. Reads design.md and structure.md for context alongside the plan.
 
 ### `/workflow:iterate` — Edit Workflow Artifacts
 
-Surgical edits to any workflow artifact (design.md, structure.md, plan/).
+Surgical edits to any workflow artifact (design.md, contract.md, plan/).
 Routes large changes back to the appropriate upstream skill instead of
 trying to do discovery here.
 
@@ -131,64 +120,15 @@ trying to do discovery here.
 ### `/workflow:plan-ralph` — Plans for Autonomous Execution
 
 Creates structured task definitions for the Ralph autonomous execution engine,
-which runs multiple Claude instances in parallel.
+which runs multiple Claude instances in parallel. Can optionally read
+`contract.md` for a behavior-based starting skeleton.
 
 **When to use:** When you want to execute a plan autonomously without
 interactive oversight, or when work can be parallelized across independent
-tasks.
+tasks. Ralph stays structural — autonomous execution needs file-level
+specificity that TDD intentionally avoids.
 
-**What it does:**
-
-Same planning process as `/workflow:plan`, but outputs two files optimized
-for autonomous execution:
-
-- **`ralph-tasks.json`** — Task definitions with IDs, descriptions, and
-  acceptance criteria
-- **`ralph-prompt.md`** — Shared context and instructions for all tasks
-
-**Task constraints for autonomous execution:**
-- Each task must be completable in one Claude context window
-- Acceptance criteria must be specific and mechanically verifiable
-- Execution order is strictly enforced (no forward dependencies)
-- Tasks are scoped tightly to prevent scope creep during autonomous runs
-
-**ralph-tasks.json structure:**
-
-```json
-{
-  "project": "Feature Name",
-  "description": "Brief description",
-  "maxParallel": 1,
-  "checkInterval": 15,
-  "promptFile": "~/brain/dev/projects/[folder]/ralph-prompt.md",
-  "tasks": [
-    {
-      "id": "T-001",
-      "title": "Create user model",
-      "description": "2-3 sentence description",
-      "acceptanceCriteria": [
-        "User model exists at src/models/user.ts",
-        "All fields from spec are present",
-        "Lint passes"
-      ],
-      "status": "pending"
-    }
-  ]
-}
-```
-
-**Execution:** Run tasks with the Ralph loop script:
-
-```bash
-ralph-loop -p ralph-tasks.json -j 4 -d 15
-```
-
-Options:
-- `-p` — Path to tasks file
-- `-m` — Override prompt file
-- `-j` — Max parallel jobs
-- `-d` — Check interval in seconds
-- `-k` — Kill all running processes
+**Output:** `ralph-tasks.json` + `ralph-prompt.md`
 
 ---
 
@@ -281,7 +221,7 @@ scope, acceptance criteria, and effort estimates.
 
 The workflow commands spawn these specialized agents as parallel sub-tasks.
 They are not invoked directly — they run behind the scenes during
-`/workflow:research` and `/workflow:plan`.
+`/workflow:research` and `/workflow:contract`.
 
 | Agent | Tools | Purpose |
 |-------|-------|---------|
@@ -333,13 +273,19 @@ hardcoded in all workflow commands for reliability.
   prompts with multiple-choice options when possible
 - **Research before planning** — Always understand the codebase before
   designing changes
+- **Behavioral contracts over structural plans** — Define what the system must
+  do, not where files go. Let TDD discover the implementation.
+- **TDD tracer bullets** — Each behavior is one red-green cycle. Riskiest
+  assumptions first.
 - **Tiered complexity** — Match the level of ceremony to the actual complexity
   of the task
-- **Verified implementation** — Separate automated and manual success criteria;
-  pause between phases
+- **Verified implementation** — Tests verify behavior through public
+  interfaces, not implementation details
 - **Pure documentation** — Research agents describe what exists, never
   prescribe what should change
 - **No open questions** — Resolve all uncertainties before finalizing any
   artifact
 - **Explicit handoffs** — Each stage produces a clear artifact that feeds the
   next
+- **Ralph for mechanical work** — Autonomous parallel execution for tasks
+  that need file-level specificity, not TDD
