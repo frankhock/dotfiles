@@ -22,13 +22,13 @@ Read `contract.md`. Parse the `## Behaviors` section for `[ ]` (pending) and `[x
 For each unchecked behavior in order:
 
 ### RED
-Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. Show the failure.
+Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. Show the user: "❌ [behavior name]" with the failure reason.
 
 ### GREEN
 Implement minimally until the test passes. Run full suite — no regressions.
 
 ### Checkpoint
-Use **AskUserQuestion tool**: "Behavior N green. Continue to next behavior?"
+Use **AskUserQuestion tool**: "✅ [behavior name] — Continue to next behavior?"
 
 After user confirms, edit `contract.md` to flip that behavior's `[ ]` to `[x]`. Match on the behavior text to find the correct line. Write to disk immediately — this is crash-safe progress tracking that survives `/clear`.
 
