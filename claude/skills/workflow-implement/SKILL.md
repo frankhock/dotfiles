@@ -15,7 +15,11 @@ disable-model-invocation: true
 
 ## TDD Cycle
 
-Read `contract.md`. For each behavior in order:
+Read `contract.md`. Parse the `## Behaviors` section for `[ ]` (pending) and `[x]` (done) checkboxes.
+
+**If any behaviors are already `[x]`**: Show "Resuming: N/M behaviors complete. Next: [first unchecked behavior name]." Start from the first `[ ]` behavior. If all are `[x]`, skip to REFACTOR.
+
+For each unchecked behavior in order:
 
 ### RED
 Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. Show the failure.
@@ -25,6 +29,8 @@ Implement minimally until the test passes. Run full suite — no regressions.
 
 ### Checkpoint
 Use **AskUserQuestion tool**: "Behavior N green. Continue to next behavior?"
+
+After user confirms, edit `contract.md` to flip that behavior's `[ ]` to `[x]`. Match on the behavior text to find the correct line. Write to disk immediately — this is crash-safe progress tracking that survives `/clear`.
 
 After all behaviors pass:
 

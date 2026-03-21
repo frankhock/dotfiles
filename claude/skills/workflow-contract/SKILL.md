@@ -74,8 +74,8 @@ Write the full contract and present via **AskUserQuestion tool** for review. Sav
 
 Ordered by risk-reduction. Each is one TDD tracer bullet.
 
-1. **[Behavior]** — [User/caller-facing outcome. No file paths. No code.]
-2. **[Behavior]** — [description]
+1. [ ] **[Behavior]** — [User/caller-facing outcome. No file paths. No code.]
+2. [ ] **[Behavior]** — [description]
 
 ## Modules
 
