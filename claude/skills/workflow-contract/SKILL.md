@@ -94,14 +94,12 @@ Ordered by risk-reduction. Each is one TDD tracer bullet.
 - [Things this must NOT do]
 
 ## Next Steps
-- [ ] `/workflow:worktree [folder-name]`
 - [ ] `/workflow:implement [folder-name]`
 ```
 
 ## Next Steps
 
 After saving, suggest `/clear`, then present via **AskUserQuestion tool**:
-- Proceed to worktree: `/workflow:worktree [folder-name]`
 - Proceed to implement: `/workflow:implement [folder-name]`
 - Refine contract further
 - Done for now
