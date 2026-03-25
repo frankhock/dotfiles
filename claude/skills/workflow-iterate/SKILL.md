@@ -17,20 +17,8 @@ Make surgical edits to any workflow artifact. For changes that require new disco
 
 ## Initial Setup
 
-When this skill is invoked:
-
-1. **Check for project folder argument**
-   - If argument provided: verify folder exists at `~/brain/dev/projects/[argument]/`
-   - Detect all artifacts present: `design.md`, `contract.md`, `structure.md`, `plan/index.md`, `plan.md`
-   - If no argument, proceed to step 2
-
-2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `~/brain/dev/projects/` that contain any workflow artifact
-   - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (design: yes/no, contract: yes/no, structure: yes/no, plan: split/mono/no)
-     - [folder-2] (...)
-     - Provide folder name manually
-
+1. **Resolve project folder** per `workflow-cache/SKILL.md`.
+2. **Detect artifacts**: `design.md`, `contract.md`, `structure.md`, `plan/index.md`, `plan.md`
 3. **If both folder and feedback provided**: proceed directly to Step 1. If folder but no feedback, ask via **AskUserQuestion tool** what changes the user wants to make.
 
 ## Step 1: Identify Target Artifact

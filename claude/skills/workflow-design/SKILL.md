@@ -19,24 +19,12 @@ Your job is to surface your understanding so the human can correct your thinking
 
 ## Initial Setup
 
-When this skill is invoked:
+1. **Resolve project folder** per `workflow-cache/SKILL.md`.
 
-1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflow:design 2025-01-27-ENG-1234-feature`):
-     - Verify folder exists at `~/brain/dev/projects/[argument]/`
-     - Check for `spec.md` — if missing, warn: "No spec.md found. The design conversation works best with a spec. Continue anyway?" via **AskUserQuestion tool**
-     - Check for `research.md` — if missing, warn: "No research.md found. Design without research may miss codebase constraints. Continue anyway?" via **AskUserQuestion tool**
-     - Check for existing `design.md` — if exists, read it, present the existing Design Concept and Key Decisions sections, then ask via **AskUserQuestion tool**: "Found an existing design. Want to continue refining this, or start fresh?"
-   - If no argument, proceed to step 2
-
-2. **Auto-detect recent project folders** (if no argument):
-   - Find folders from last 30 days in `~/brain/dev/projects/`
-   - Use **AskUserQuestion tool** to show options:
-     - [folder-1] (spec: yes/no, research: yes/no, design: yes/no)
-     - [folder-2] (spec: yes/no, research: yes/no, design: yes/no)
-     - Provide folder name manually
-
-3. **If no folders found or user provides folder name**: Verify folder exists and proceed.
+2. **Validate artifacts**:
+   - Check for `spec.md` — if missing, warn: "No spec.md found. The design conversation works best with a spec. Continue anyway?" via **AskUserQuestion tool**
+   - Check for `research.md` — if missing, warn: "No research.md found. Design without research may miss codebase constraints. Continue anyway?" via **AskUserQuestion tool**
+   - Check for existing `design.md` — if exists, read it, present the existing Design Concept and Key Decisions sections, then ask via **AskUserQuestion tool**: "Found an existing design. Want to continue refining this, or start fresh?"
 
 ## Step 1: Absorb Context
 

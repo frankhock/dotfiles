@@ -17,14 +17,12 @@ Turn the approved design into a behavioral contract — what the system must do,
 
 ## Initial Setup
 
-When this skill is invoked:
+1. **Resolve project folder** per `workflow-cache/SKILL.md`.
 
-1. **Check for project folder argument**
-   - If argument provided: verify folder exists at `~/brain/dev/projects/[argument]/`
+2. **Validate artifacts**:
    - Check for `design.md` — if missing, warn via **AskUserQuestion tool**
    - Check for `research.md` — if missing, warn via **AskUserQuestion tool**
    - Check for existing `contract.md` — if exists, present Behaviors and Modules sections, ask via **AskUserQuestion tool**: "Found an existing contract. Refine this, or start fresh?"
-   - If no argument, auto-detect recent project folders and present via **AskUserQuestion tool**
 
 ## Step 1: Absorb Design + Research
 

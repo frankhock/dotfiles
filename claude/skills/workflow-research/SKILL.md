@@ -18,15 +18,12 @@ Your job is to **document what exists** — not to evaluate, critique, or sugges
 
 ## Initial Setup
 
-1. **Check for project folder argument**
-   - If argument provided (e.g., `/workflow:research 2025-01-27-ENG-1234-feature-name`):
-     - Verify folder exists at `~/brain/dev/projects/[argument]/`
-     - If exists, read existing `research.md` for context
-     - Read `spec.md` if it exists
-     - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
-   - If no argument, proceed to step 2
+1. **Resolve project folder** per `workflow-cache/SKILL.md`. If a folder is resolved:
+   - Read existing `research.md` for context
+   - Read `spec.md` if it exists
+   - Inform user: "Continuing research for project [folder-name]. Previous research loaded."
 
-2. **If no argument provided**: Ask the user what they'd like to research.
+2. **If no folder resolved**: Ask the user what they'd like to research.
 
 ## Research Steps
 

@@ -12,10 +12,7 @@ Plan work interactively, then output task definitions and an execution prompt fo
 
 ## Initial Setup
 
-1. **Resolve project folder**:
-   - If argument provided: verify `~/brain/dev/projects/[argument]/` exists with `spec.md`
-   - If no argument: find folders from last 30 days in `~/brain/dev/projects/`, use **AskUserQuestion** to let user pick or provide a name
-   - Stop if folder or `spec.md` is missing
+1. **Resolve project folder** per `workflow-cache/SKILL.md`. Stop if folder or `spec.md` is missing.
 
 2. **Read `spec.md` and `research.md` (if available) FULLY** — no partial reads, no limit/offset. Do this yourself in the main context before spawning any agents.
 

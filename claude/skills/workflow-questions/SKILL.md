@@ -25,9 +25,7 @@ Those belong in `/workflow:design` after codebase research.
 
 ## Setup
 
-1. If argument provided (e.g., `/workflow:questions 2025-01-30-ENG-123-feature`):
-   - Look for folder at `~/brain/dev/projects/[argument]/`
-   - Read `spec.md` if it exists (resuming)
+1. **Resolve project folder** per `workflow-cache/SKILL.md`. If a folder is resolved, read `spec.md` if it exists (resuming).
 
 2. If the user's input already has clear, detailed requirements, offer to skip the interview and go straight to writing the spec.
 

@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 ## Initial Setup
 
-1. **Locate project folder** — from argument or auto-detect recent folders in `~/brain/dev/projects/` via **AskUserQuestion tool**
+1. **Resolve project folder** per `workflow-cache/SKILL.md`.
 2. **Read context**: `contract.md` (required), `research.md`, `design.md`
    - If no `contract.md` → stop, tell the user to run `/workflow:contract` first
 
