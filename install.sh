@@ -49,11 +49,14 @@ ln -sf ~/dotfiles/zed/keymap.json ~/.config/zed/keymap.json
 ln -sf ~/dotfiles/zed/settings.json ~/.config/zed/settings.json
 ln -sf ~/dotfiles/zed/tasks.json ~/.config/zed/tasks.json
 
-# Claude stuff
-ln -sf ~/dotfiles/claude/agents ~/.claude/agents
-ln -sf ~/dotfiles/claude/commands ~/.claude/commands
-ln -sf ~/dotfiles/claude/hooks ~/.claude/hooks
-ln -sf ~/dotfiles/claude/skills ~/.claude/skills
+# Claude stuff — remove existing dirs so ln doesn't nest the symlink inside them
+for dir in agents commands hooks skills; do
+    target="$HOME/.claude/$dir"
+    if [ -d "$target" ] && [ ! -L "$target" ]; then
+        rm -rf "$target"
+    fi
+    ln -sfn ~/dotfiles/claude/$dir "$target"
+done
 
 # Ghostty stuff
 ln -sf ~/dotfiles/ghostty/config ~/.config/ghostty
