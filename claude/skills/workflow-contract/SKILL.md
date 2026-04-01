@@ -23,7 +23,7 @@ When this skill is invoked:
    - If argument provided: verify folder exists at `~/brain/dev/projects/[argument]/`
    - Check for `design.md` — if missing, warn via **AskUserQuestion tool**
    - Check for `research.md` — if missing, warn via **AskUserQuestion tool**
-   - Check for existing `contract.md` — if exists, present Behaviors and Modules sections, ask via **AskUserQuestion tool**: "Found an existing contract. Refine this, or start fresh?"
+   - Check for existing `contract.md` — if exists, output the Behaviors and Modules sections as text, then ask via **AskUserQuestion tool**: "Found an existing contract. Refine this, or start fresh?"
    - If no argument, auto-detect recent project folders and present via **AskUserQuestion tool**
 
 ## Step 1: Absorb Design + Research
@@ -35,14 +35,19 @@ When this skill is invoked:
 
 Propose an ordered list of behaviors. Each behavior = one user/caller-facing outcome. Order by risk-reduction: the first behavior is the smallest end-to-end proof of the riskiest assumption.
 
-Present via **AskUserQuestion tool**:
+First, output the behaviors as regular text so markdown renders properly:
+
 ```
 Proposed behaviors (risk-reduction order):
-1. [Behavior] — [outcome]
-2. [Behavior] — [outcome]
-...
-Reorder, merge, split, or add?
+
+1. **[Short behavior name]**
+   [One sentence: what outcome this proves and why it's ordered here]
+
+2. **[Short behavior name]**
+   [One sentence: what outcome this proves and why it's ordered here]
 ```
+
+Then ask via **AskUserQuestion tool** with just the decision prompt: "Reorder, merge, split, or add?"
 
 ## Step 3: Define Module Boundaries
 
@@ -57,11 +62,11 @@ Determine through conversation:
 - Prior art from `research.md`
 - Anti-behaviors from design's Boundaries and spec's "Won't Have"
 
-Use **AskUserQuestion tool** for each decision point.
+For each decision point, output your recommendation as text, then use **AskUserQuestion tool** with a short confirmation or choice prompt.
 
 ## Step 5: Write contract.md
 
-Write the full contract and present via **AskUserQuestion tool** for review. Save to `~/brain/dev/projects/[folder]/contract.md`:
+Write the full contract and output it as text for review. Then ask via **AskUserQuestion tool**: "Save this contract, or revise?" Save to `~/brain/dev/projects/[folder]/contract.md`:
 
 ```markdown
 # Contract: [Feature/Task Name]
@@ -99,7 +104,4 @@ Ordered by risk-reduction. Each is one TDD tracer bullet.
 
 ## Next Steps
 
-After saving, suggest `/clear`, then present via **AskUserQuestion tool**:
-- Proceed to implement: `/workflow:implement [folder-name]`
-- Refine contract further
-- Done for now
+After saving, suggest `/clear`, then ask via **AskUserQuestion tool**: "Next: implement, refine, or done for now?"
