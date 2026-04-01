@@ -9,12 +9,12 @@
 {
   "agent_servers": {
     "claude-acp": {
-      "type": "registry"
-    }
+      "type": "registry",
+    },
   },
   "diff_view_style": "unified",
   "git_panel": {
-    "tree_view": true
+    "tree_view": true,
   },
   "use_smartcase_search": true,
   "search": {
@@ -29,12 +29,6 @@
   "buffer_font_family": "JetBrains Mono",
   "base_keymap": "VSCode",
   "icon_theme": "Material Icon Theme",
-  "agent": {
-    "inline_assistant_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4",
-    },
-  },
   "ui_font_size": 16,
   "buffer_font_size": 13.5,
   "buffer_font_features": {
