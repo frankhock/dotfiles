@@ -21,7 +21,7 @@ Read `contract.md`. Parse `## Behaviors` for `[ ]` (pending) and `[x]` (done) ch
 For each unchecked behavior in order:
 
 ### RED
-Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. Show: "❌ [behavior name]" with the failure reason.
+Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. If a relevant testing skills are available, them it. Show: "❌ [behavior name]" with the failure reason.
 
 ### GREEN
 Implement minimally until the test passes. Run full suite — no regressions.
