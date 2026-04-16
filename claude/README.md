@@ -87,15 +87,6 @@ system must do and must not do.
 
 ---
 
-### `/workflow:worktree` — Create Implementation Worktree
-
-Creates an isolated git worktree for implementation — a clean workspace on
-its own branch. Runs workspace setup automatically.
-
-**Output:** branch + worktree — **Next step:** `/workflow:implement [folder-name]`
-
----
-
 ### `/workflow:implement` — TDD Tracer Bullets
 
 For each behavior in contract order — write one failing test (RED), implement
