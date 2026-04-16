@@ -9,7 +9,7 @@ This plugin provides a **QRDCI pipeline** — focused stages that turn ideas int
 shipped code, each producing one artifact that feeds the next:
 
 ```
-Questions → Research → Design → Contract → Worktree → Implement → PR
+Questions → Research → Design → Contract → Implement → PR
 ```
 
 | Stage | Command | Output | Purpose |
@@ -18,7 +18,6 @@ Questions → Research → Design → Contract → Worktree → Implement → PR
 | **Research** | `/workflow:research` | `research.md` | Objective codebase facts |
 | **Design** | `/workflow:design` | `design.md` | Iterative design conversation |
 | **Contract** | `/workflow:contract` | `contract.md` | Behavioral contracts + module boundaries |
-| **Worktree** | `/workflow:worktree` | branch + worktree | Isolated workspace |
 | **Implement** | `/workflow:implement` | Working code | TDD tracer bullets from contract |
 | **PR** | `/pr-create` | Pull request | Ship it |
 
@@ -83,7 +82,7 @@ becoming one TDD tracer bullet), deep module boundaries, testing decisions,
 and anti-behaviors. No file paths, no LOC, no code snippets — just what the
 system must do and must not do.
 
-**Output:** `contract.md` — **Next step:** `/workflow:worktree [folder-name]` or `/workflow:implement [folder-name]`
+**Output:** `contract.md` — **Next step:** `/workflow:implement [folder-name]`
 
 ---
 
