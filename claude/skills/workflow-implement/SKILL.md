@@ -9,7 +9,7 @@ argument-hint: "[project-folder]"
 ## Setup
 
 1. **Locate project folder** — from argument or auto-detect recent folders in `~/brain/dev/projects/`, ask if unclear
-2. **Read context**: `contract.md` (required), `research.md`, `design.md`
+2. **Read context**: `contract.md` (required). Read `research.md` and `design.md` on-demand — `research.md` when you need file placement or local conventions, `design.md` when a behavior is ambiguous and you need pattern rationale.
    - If no `contract.md` → stop, tell the user to run `/workflow:contract` first
 
 ## TDD Cycle
@@ -24,7 +24,7 @@ For each unchecked behavior in order:
 Write one failing test that verifies the behavior through its public interface. Run it — confirm it fails for the right reason. If a relevant testing skills are available, them it. Show: "❌ [behavior name]" with the failure reason.
 
 ### GREEN
-Implement minimally until the test passes. Run full suite — no regressions.
+Implement minimally until the test passes. Run scoped tests during iteration by passing specific spec/test file paths — the new test plus tests touching changed files. During iteration, never invoke the runner with no arguments (that runs the full suite). Escalate to the full suite mid-cycle only when the change crosses module boundaries or touches shared utilities, types, or build config.
 
 ### Checkpoint
 Flip that behavior's `[ ]` to `[x]` in `contract.md` (this survives `/clear`). Then **stop** and present:
@@ -48,6 +48,7 @@ Extract duplication, clean up. Tests must stay green. Run full suite.
 - Do NOT write all tests first — one RED/GREEN cycle at a time
 - Each test must fail for the right reason before implementing
 - Discover file structure from the codebase and `research.md` — the contract doesn't dictate where code goes
+- Don't pipe test output through `tail`, `head`, `grep`, or similar — output proxies (RTK and others) need the raw stream to summarize, and truncating defeats their token compression. If output is too large, narrow the test scope instead.
 
 ## Mismatch Handling
 
