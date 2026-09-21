@@ -1,0 +1,23 @@
+[packages.common]
+brews = [
+    "chezmoi",
+    "atuin",
+    "fzf",
+    "rbenv",
+    "volta",
+    "starship",
+    "zoxide",
+    "eza",
+]
+casks = [
+    "ghostty",
+    "zed",
+]
+
+[packages.work]
+brews = []
+casks = []
+
+[packages.personal]
+brews = []
+casks = []

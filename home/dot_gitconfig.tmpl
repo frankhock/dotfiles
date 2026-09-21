@@ -1,0 +1,37 @@
+[user]
+	name = {{ .git.name }}
+	email = {{ .git.email }}
+{{- if .git.signingKey }}
+	signingkey = {{ .git.signingKey }}
+{{- end }}
+
+[color]
+	ui = auto
+
+[core]
+	editor = zed --wait
+	pager = less -FRX
+
+[diff]
+	algorithm = histogram
+
+[fetch]
+	prune = true
+
+[init]
+	defaultBranch = main
+
+[merge]
+	conflictstyle = diff3
+
+[pull]
+	rebase = true
+
+[push]
+	default = current
+
+[rerere]
+	enabled = true
+
+[commit]
+	gpgsign = {{ .git.gpgSign }}

@@ -1,0 +1,15 @@
+{{- $profile := promptChoiceOnce . "profile" "Machine profile" (list "work" "personal") "personal" -}}
+{{- $gitName := promptStringOnce . "git.name" "Git author name" -}}
+{{- $gitEmail := promptStringOnce . "git.email" "Git author email" -}}
+{{- $gitSigningKey := promptStringOnce . "git.signingKey" "Git signing key (optional)" "" -}}
+{{- $gitGPGSign := promptBoolOnce . "git.gpgSign" "Sign Git commits with GPG" false -}}
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
+[data]
+    profile = {{ $profile | quote }}
+
+[data.git]
+    name = {{ $gitName | quote }}
+    email = {{ $gitEmail | quote }}
+    signingKey = {{ $gitSigningKey | quote }}
+    gpgSign = {{ $gitGPGSign }}

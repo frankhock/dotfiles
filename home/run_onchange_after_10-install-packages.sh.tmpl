@@ -1,0 +1,35 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+
+set -euo pipefail
+
+if command -v brew >/dev/null 2>&1; then
+    brew_command="$(command -v brew)"
+elif [[ -x /opt/homebrew/bin/brew ]]; then
+    brew_command=/opt/homebrew/bin/brew
+elif [[ -x /usr/local/bin/brew ]]; then
+    brew_command=/usr/local/bin/brew
+else
+    echo "Homebrew is not available" >&2
+    exit 1
+fi
+
+"$brew_command" bundle install --no-upgrade --file=- <<'BREWFILE'
+{{- range .packages.common.brews }}
+brew {{ . | quote }}
+{{- end }}
+{{- with (index .packages .profile) }}
+{{- range .brews }}
+brew {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- range .packages.common.casks }}
+cask {{ . | quote }}
+{{- end }}
+{{- with (index .packages .profile) }}
+{{- range .casks }}
+cask {{ . | quote }}
+{{- end }}
+{{- end }}
+BREWFILE
+{{- end }}
