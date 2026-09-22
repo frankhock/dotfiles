@@ -57,6 +57,10 @@ Shared, work-only, and personal-only Homebrew lists live in
 `home/.chezmoidata/packages.toml`. Machine-local profile and Git identity data
 live in `~/.config/chezmoi/chezmoi.toml`.
 
+mise manages the global Node.js LTS release declared in
+`home/dot_config/mise/config.toml`; project-level mise configuration can
+override it.
+
 To recreate the local config and answer the prompts again:
 
 ```sh

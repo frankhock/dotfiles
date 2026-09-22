@@ -32,4 +32,7 @@ cask {{ . | quote }}
 {{- end }}
 {{- end }}
 BREWFILE
+
+mise_command="$("$brew_command" --prefix mise)/bin/mise"
+"$mise_command" install --yes
 {{- end }}

@@ -4,7 +4,7 @@ brews = [
     "atuin",
     "fzf",
     "rbenv",
-    "volta",
+    "mise",
     "starship",
     "zoxide",
     "eza",
