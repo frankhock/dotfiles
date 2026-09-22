@@ -1,6 +1,8 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 
+# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+
 set -euo pipefail
 
 if command -v brew >/dev/null 2>&1; then

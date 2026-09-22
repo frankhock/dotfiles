@@ -13,7 +13,7 @@
  *   "hooks": {
  *     "PreToolUse": [{
  *       "matcher": "Bash",
- *       "hooks": [{ "type": "command", "command": "bun /path/to/block-dangerous-commands.ts" }]
+ *       "hooks": [{ "type": "command", "command": "$HOME/.local/share/mise/installs/bun/latest/bin/bun /path/to/block-dangerous-commands.ts" }]
  *     }]
  *   }
  * }

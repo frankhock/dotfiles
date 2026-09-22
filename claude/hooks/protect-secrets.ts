@@ -14,7 +14,7 @@
  *   "hooks": {
  *     "PreToolUse": [{
  *       "matcher": "Read|Edit|Write|Bash",
- *       "hooks": [{ "type": "command", "command": "bun /path/to/protect-secrets.ts" }]
+ *       "hooks": [{ "type": "command", "command": "$HOME/.local/share/mise/installs/bun/latest/bin/bun /path/to/protect-secrets.ts" }]
  *     }]
  *   }
  * }
