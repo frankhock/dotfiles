@@ -31,7 +31,7 @@ chezmoi status
 ```
 
 The first apply installs Homebrew if necessary, then installs the curated
-formulae and casks declared in `home/.chezmoidata/packages.toml`. It does not
+formulae and casks declared in `chezmoi/.chezmoidata/packages.toml`. It does not
 remove unrelated packages or upgrade the full machine.
 
 Git push credentials and `~/.env` are deliberately machine-local and are not
@@ -54,11 +54,11 @@ Commit and push source changes with normal Git commands from `~/dotfiles`.
 ## Profiles and packages
 
 Shared, work-only, and personal-only Homebrew lists live in
-`home/.chezmoidata/packages.toml`. Machine-local profile and Git identity data
+`chezmoi/.chezmoidata/packages.toml`. Machine-local profile and Git identity data
 live in `~/.config/chezmoi/chezmoi.toml`.
 
 mise manages the global Node.js LTS and latest Bun releases declared in
-`home/dot_config/mise/config.toml`; project-level mise configuration can
+`chezmoi/dot_config/mise/config.toml`; project-level mise configuration can
 override them. Run the Claude hook specs from the repository root with
 `bun test claude/hooks`.
 
