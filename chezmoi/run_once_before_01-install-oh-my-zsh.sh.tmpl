@@ -1,0 +1,11 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+
+set -euo pipefail
+
+if [[ -r "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]]; then
+    exit 0
+fi
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+{{- end }}

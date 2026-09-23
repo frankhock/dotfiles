@@ -1,4 +1,6 @@
+alias bi='bundle install'
+alias cc='claude --dangerously-skip-permissions'
+alias cx='codex --yolo'
+alias gs='git status'
 alias l='eza -lah --group-directories-first'
 alias ll='eza -lh --group-directories-first'
-alias bi='bundle install'
-alias gs='git status'

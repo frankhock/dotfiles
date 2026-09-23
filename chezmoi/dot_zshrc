@@ -15,8 +15,15 @@ if command -v brew >/dev/null 2>&1; then
     unset brew_prefix
 fi
 
-autoload -Uz compinit
-compinit
+if [[ -r "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]]; then
+    export ZSH="$HOME/.oh-my-zsh"
+    ZSH_THEME=""
+    plugins=(git)
+    source "$ZSH/oh-my-zsh.sh"
+else
+    autoload -Uz compinit
+    compinit
+fi
 
 if command -v atuin >/dev/null 2>&1; then
     eval "$(atuin init zsh)"
