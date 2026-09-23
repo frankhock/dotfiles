@@ -42,8 +42,8 @@ managed by chezmoi.
 ```sh
 chezmoi status                 # Show pending changes
 chezmoi diff                   # Review pending changes
-chezmoi edit ~/.zshrc          # Edit a managed source file
-chezmoi edit --apply ~/.zshrc  # Edit and apply one file
+chezmoi edit ~/.config/zsh/init.zsh          # Edit the zsh setup
+chezmoi edit --apply ~/.config/zsh/init.zsh  # Edit and apply the zsh setup
 chezmoi apply                  # Apply local source changes
 chezmoi update                 # Pull and apply remote changes
 chezmoi cd                     # Open a shell in ~/dotfiles
@@ -56,6 +56,10 @@ Commit and push source changes with normal Git commands from `~/dotfiles`.
 Shared, work-only, and personal-only Homebrew lists live in
 `chezmoi/.chezmoidata/packages.toml`. Machine-local profile and Git identity data
 live in `~/.config/chezmoi/chezmoi.toml`.
+
+Application configuration follows the XDG layout under `~/.config`. The
+root-level `~/.zshrc` is a compatibility loader for `~/.config/zsh/init.zsh`,
+and Git reads its global configuration from `~/.config/git/config`.
 
 mise manages the global Node.js LTS and latest Bun releases declared in
 `chezmoi/dot_config/mise/config.toml`; project-level mise configuration can
