@@ -1,0 +1,10 @@
+onboarding = false
+[ui]
+agent_panel_sort = "spaces"
+
+[theme]
+name = "gruvbox"
+auto_switch = false
+
+[keys]
+prefix = "cmd+b"
