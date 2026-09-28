@@ -35,3 +35,11 @@
 
 [commit]
 	gpgsign = {{ .git.gpgSign }}
+
+[tag]
+	gpgSign = {{ .git.gpgSign }}
+{{- if .git.gpgSign }}
+
+[gpg]
+	program = /opt/homebrew/bin/gpg
+{{- end }}

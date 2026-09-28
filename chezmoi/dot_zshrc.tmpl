@@ -3,3 +3,7 @@ if [[ -r "$_dotfiles_zsh_init" ]]; then
     source "$_dotfiles_zsh_init"
 fi
 unset _dotfiles_zsh_init
+
+{{- if eq .profile "work" }}
+eval "$( {{ .chezmoi.homeDir }}/.local/dotfiles/bin/dotfiles init zsh)"
+{{- end }}
