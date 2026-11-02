@@ -43,3 +43,6 @@
 [gpg]
 	program = /opt/homebrew/bin/gpg
 {{- end }}
+
+[credential "https://git.heroku.com"]
+	helper = !heroku git:credentials

@@ -51,8 +51,8 @@
   },
   "theme": {
     "mode": "dark",
-    "light": "Ayu Light",
-    "dark": "Tokyo Night",
+    "light": "Gruvbox Light",
+    "dark": "Gruvbox Dark Hard",
   },
   "languages": {
     "Ruby": {
