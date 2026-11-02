@@ -3,7 +3,6 @@ brews = [
     "chezmoi",
     "atuin",
     "fzf",
-    "rbenv",
     "mise",
     "starship",
     "zoxide",

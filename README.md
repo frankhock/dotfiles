@@ -63,8 +63,8 @@ and Git reads its global configuration from `~/.config/git/config`.
 
 mise manages the global Node.js LTS and latest Bun releases declared in
 `chezmoi/dot_config/mise/config.toml`; project-level mise configuration can
-override them. Run the Claude hook specs from the repository root with
-`bun test claude/hooks`.
+override them. Ruby is selected per project from existing `.ruby-version` files.
+Run the Claude hook specs from the repository root with `bun test claude/hooks`.
 
 To recreate the local config and answer the prompts again:
 
